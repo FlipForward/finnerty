@@ -1,0 +1,125 @@
+/* Base document styling and the shared palette.
+   Colour values mirror docs/ART_BIBLE.md — keep the two in sync. */
+
+:root {
+  --ink: #14202b;
+  --ink-deep: #0d161e;
+  --grass-shadow: #365e41;
+  --grass-mid: #5e9a52;
+  --grass-light: #9bcb68;
+  --stone-shadow: #5b5b54;
+  --stone-mid: #9f9583;
+  --stone-light: #e0d1b3;
+  --wood-dark: #6e442a;
+  --wood-light: #a86e3f;
+  --cobalt: #2e6eea;
+  --light-blue: #68a8ff;
+  --pale-blue: #d6f0ff;
+  --amber: #ffc45b;
+  --live-red: #e8564e;
+
+  --font-ui: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ink-deep);
+  color: var(--stone-light);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.55;
+  letter-spacing: 0.04em;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+}
+
+/* Bitmap-font images must never be resampled smoothly. */
+.pixel-text {
+  display: block;
+  image-rendering: pixelated;
+  max-width: 100%;
+  height: auto;
+}
+
+/* A square, deliberately un-glossy control. No rounded pill buttons. */
+.button {
+  appearance: none;
+  border: 2px solid var(--stone-shadow);
+  background: transparent;
+  color: var(--stone-light);
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 90ms linear, border-color 90ms linear, color 90ms linear;
+}
+
+.button:hover {
+  border-color: var(--light-blue);
+  color: var(--pale-blue);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--light-blue);
+  outline-offset: 2px;
+}
+
+.button:active {
+  background: var(--cobalt);
+  border-color: var(--cobalt);
+  color: #fff;
+}
+
+/* Obviously-unfinished content. The hatching is the point: nobody should
+   mistake one of these for a built feature. */
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+  border: 2px dashed var(--stone-shadow);
+  background-color: rgba(91, 91, 84, 0.07);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent 0 10px,
+    rgba(91, 91, 84, 0.12) 10px 20px
+  );
+}
+
+.placeholder--tall {
+  min-height: 220px;
+}
+
+.placeholder__label {
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  color: var(--stone-light);
+}
+
+.placeholder__note {
+  font-size: 12px;
+  color: var(--stone-mid);
+  max-width: 42ch;
+  line-height: 1.6;
+}
