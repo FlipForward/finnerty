@@ -63,8 +63,8 @@ export const INTERACT_RANGE = 30
 /** Seconds for one full day -> night -> day cycle. */
 export const DAY_CYCLE_SECONDS = 300
 
-/** Texture keys. All are generated procedurally at boot for V1; each one maps
- *  to a future file under public/assets/ (see docs/ART_BIBLE.md). */
+/** Texture keys. Each one maps to a real file under `public/assets/`, with
+ *  BootScene preserving the procedural version as a fallback. */
 export const TextureKeys = {
   tileset: 'tileset',
   player: 'player',

@@ -692,8 +692,8 @@ function generateShadow(scene: Phaser.Scene): void {
 /**
  * Builds every placeholder texture. Called once from BootScene.
  *
- * TODO(art): when real assets land, replace each call with a `this.load.*` in
- * BootScene.preload and delete the corresponding generator.
+ * Real files loaded in BootScene take priority. These generators stay in place
+ * so development builds still boot cleanly if an asset is missing or invalid.
  */
 export function generatePlaceholderTextures(scene: Phaser.Scene): void {
   generateTileset(scene)
