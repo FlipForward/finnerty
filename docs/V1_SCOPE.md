@@ -8,8 +8,8 @@ untangling architecture.
 
 - Title state that is a live view of the world, not a web hero section.
 - One playable map, 60 × 40 tiles (960 × 640 px), roughly four screens: an
-  arrival plaza around the gate, an avenue east, a trail south, and a timber
-  live deck over the lake.
+  Arrival Island lobby around a cosy streamer lodge, a forest bridge route, a
+  visible but sealed cliff route, and a timber Live Deck over the lake.
 - Walking, four-direction animation, normalised diagonals, arcade collision.
 - Camera follow, clamped to world bounds.
 - A reusable interaction system with five landmarks on it.

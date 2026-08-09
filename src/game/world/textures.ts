@@ -546,6 +546,39 @@ function generateProps(scene: Phaser.Scene): void {
     drawText(liveCtx, 'LIVE', 38 - Math.round(width / 2), 25, 1, C.stoneLight)
     liveTexture.refresh()
   }
+
+  // Arrival Lodge: deliberately a local, replaceable texture rather than a
+  // pretend-final file. It gives the lobby a clear home base until the final
+  // 64x64 building art arrives.
+  propCanvas(scene, TextureKeys.lodge, (buf) => {
+    // Stone footings ground the building in the island rather than making it
+    // float like a menu icon.
+    buf.rect(10, 53, 44, 3, C.stoneMid)
+    buf.rect(10, 53, 44, 1, C.stoneLight)
+    buf.rect(14, 31, 36, 22, C.woodLight)
+    buf.rect(14, 31, 36, 3, C.stoneLight)
+    buf.rect(14, 50, 36, 3, C.woodDark)
+
+    // A broad, weathered roof with an intentionally uneven silhouette.
+    buf.rect(27, 13, 10, 3, C.woodDark)
+    buf.rect(23, 16, 18, 3, C.woodDark)
+    buf.rect(20, 19, 24, 3, C.woodDark)
+    buf.rect(17, 22, 30, 3, C.woodDark)
+    buf.rect(14, 25, 36, 6, C.woodDark)
+    buf.rect(17, 22, 27, 1, C.woodLight)
+    buf.rect(14, 25, 33, 1, C.woodLight)
+
+    // Door, warm windows, and one restrained cobalt studio accent.
+    buf.rect(28, 39, 8, 14, C.woodDark)
+    buf.rect(29, 40, 2, 13, C.woodLight)
+    buf.rect(18, 37, 7, 9, C.amber)
+    buf.rect(19, 38, 2, 7, C.paleBlue)
+    buf.rect(39, 37, 7, 9, C.amber)
+    buf.rect(40, 38, 2, 7, C.paleBlue)
+    buf.rect(48, 28, 3, 12, C.cobalt)
+    buf.rect(48, 28, 1, 12, C.lightBlue)
+    buf.rect(51, 28, 5, 2, C.stoneLight)
+  })
 }
 
 // ------------------------------------------------------------------- character

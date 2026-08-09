@@ -8,6 +8,7 @@ import { PixelLabel, makeTextTexture } from '../ui/PixelText'
 import { INTERACTABLES, type InteractableDef, type InteractableKind } from '../world/interactables'
 import {
   HILLSIDE,
+  LOBBY_FEATURES,
   SOLID_TILES,
   SPAWN_TILE,
   TITLE_CAMERA,
@@ -155,6 +156,24 @@ export class WorldScene extends Phaser.Scene {
       }
     }
 
+    // ---- arrival lodge ----------------------------------------------------
+    // This stays outside the generic prop grid because it is a named landmark
+    // with its own replacement seam, not repeatable scenery.
+    const lodge = tileToWorld(LOBBY_FEATURES.lodge.tileX, LOBBY_FEATURES.lodge.tileY)
+    this.addProp(TextureKeys.lodge, lodge.x, lodge.y, { width: 42, height: 12 })
+    this.timeOfDay.addLight(lodge.x - 12, lodge.y - 22, {
+      radius: 28,
+      color: PALETTE.lanternAmber,
+      nightAlpha: 0.32,
+      flicker: 0.02,
+    })
+    this.timeOfDay.addLight(lodge.x + 12, lodge.y - 22, {
+      radius: 28,
+      color: PALETTE.lanternAmber,
+      nightAlpha: 0.3,
+      flicker: 0.02,
+    })
+
     // ---- interactables -----------------------------------------------------
     for (const def of INTERACTABLES) this.addInteractable(def)
 
@@ -172,8 +191,8 @@ export class WorldScene extends Phaser.Scene {
   // ------------------------------------------------------------------ builders
 
   private createHillsideLettering(): void {
-    // World geometry, not UI: the letters sit on the cliff band closing off the
-    // north of the map, so you meet them by walking toward them.
+    // World geometry, not UI: stone letters sit against the dark cliff face
+    // behind the lodge, with a hard carved recess anchoring them to the rock.
     const { key } = makeTextTexture(this, [HILLSIDE.text], {
       scale: HILLSIDE.scale,
       color: hex(PALETTE.stoneLight),
@@ -323,6 +342,9 @@ export class WorldScene extends Phaser.Scene {
     this.player.setVisible(true)
     const camera = this.cameras.main
     camera.startFollow(this.player, true, 0.14, 0.14)
+    // Keeps the player on the arrival path in the lower foreground so the
+    // lodge and the routes ahead remain readable at the first playable frame.
+    camera.setFollowOffset(0, -120)
     camera.fadeIn(420, 0, 0, 0)
 
     this.setInputLocked(false)

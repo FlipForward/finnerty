@@ -11,11 +11,19 @@
 .shell__canvas {
   position: absolute;
   inset: 0;
+  overflow: hidden;
 }
 
-/* Phaser centres the canvas itself via margins; we only guarantee crispness. */
+/* An integer-scaled canvas can slightly overhang at awkward viewport ratios.
+   Cropping that overhang preserves square pixels and lets the world fill the
+   browser rather than living in a dark frame. */
 .shell__canvas canvas {
-  display: block;
+  display: block !important;
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  margin: 0 !important;
+  transform: translate(-50%, -50%);
   image-rendering: pixelated;
 }
 
@@ -63,19 +71,6 @@
   padding-bottom: 9vh;
 }
 
-/* Frames the letterboxed canvas. UI chrome, not pixel art. */
-.title__vignette {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at 50% 42%,
-    rgba(13, 22, 30, 0) 38%,
-    rgba(13, 22, 30, 0.55) 78%,
-    rgba(13, 22, 30, 0.86) 100%
-  );
-}
-
 .title__content {
   position: relative;
   display: flex;
@@ -118,6 +113,10 @@
 @media (prefers-reduced-motion: reduce) {
   .title__prompt {
     animation: none;
+  }
+
+  .shell__hint {
+    transition: none;
   }
 }
 
@@ -277,9 +276,7 @@
   display: grid;
   place-items: center;
   padding: 32px 22px;
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(46, 110, 234, 0.16), transparent 62%),
-    var(--ink-deep);
+  background: var(--ink-deep);
   overflow-y: auto;
 }
 

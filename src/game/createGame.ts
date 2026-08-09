@@ -14,11 +14,9 @@ export interface GameHandle {
 /**
  * Boots Phaser into `parent`.
  *
- * Scaling is deliberately integer-only. Phaser's FIT mode would letterbox to a
- * fractional scale, which makes some source pixels 3 screen pixels wide and
- * others 4 — sharp, but visibly uneven on a 480x270 canvas. Rounding down to a
- * whole multiple keeps every pixel square at the cost of a slightly smaller
- * picture, which is the trade real pixel-art games make.
+ * Scaling is deliberately integer-only. Rounding up keeps every source pixel
+ * square while the shell crops the small overhang at the viewport edge, so the
+ * game fills the browser without a dark letterbox around the world.
  */
 export function createGame(parent: HTMLElement): GameHandle {
   const game = new Phaser.Game({
@@ -45,7 +43,7 @@ export function createGame(parent: HTMLElement): GameHandle {
     const width = parent.clientWidth || window.innerWidth
     const height = parent.clientHeight || window.innerHeight
     const raw = Math.min(width / VIRTUAL_WIDTH, height / VIRTUAL_HEIGHT)
-    const zoom = Math.max(1, Math.floor(raw))
+    const zoom = Math.max(1, Math.ceil(raw))
     if (game.scale.zoom !== zoom) game.scale.setZoom(zoom)
   }
 

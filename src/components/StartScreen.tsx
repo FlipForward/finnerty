@@ -26,7 +26,6 @@ export function StartScreen({ onStart }: Props) {
 
   return (
     <div className="title">
-      <div className="title__vignette" />
       <div className="title__content">
         <button className="title__prompt" type="button" onClick={onStart}>
           <PixelText text="PRESS ENTER TO PLAY" scale={4} color="#e0d1b3" shadowColor="#14202b" />

@@ -63,8 +63,8 @@ export const INTERACT_RANGE = 30
 /** Seconds for one full day -> night -> day cycle. */
 export const DAY_CYCLE_SECONDS = 300
 
-/** Texture keys. Each one maps to a real file under `public/assets/`, with
- *  BootScene preserving the procedural version as a fallback. */
+/** Texture keys. Shipped art loads from `public/assets/`; the Arrival Lodge is
+ *  an isolated procedural placeholder until its final 64x64 asset arrives. */
 export const TextureKeys = {
   tileset: 'tileset',
   player: 'player',
@@ -82,6 +82,8 @@ export const TextureKeys = {
   portal: 'prop-portal',
   sign: 'prop-sign',
   liveSign: 'prop-live-sign',
+  /** Procedural lodge placeholder. A supplied 64x64 asset can replace it. */
+  lodge: 'prop-lodge',
   light: 'fx-light',
   shadow: 'fx-shadow',
 } as const

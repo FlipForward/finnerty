@@ -50,13 +50,13 @@ npm run preview
 
 ## What V1 does
 
-- **Title state** — a live, slowly drifting view of the world rather than a web
-  hero section. The giant `MRFINNERTYTV` lettering is world geometry on the
-  cliff to the north, not UI text: you can walk up to it.
+- **Arrival Island lobby** — a live, slowly drifting view into a real hub rather
+  than a web hero or a menu floating above a map. The giant `MRFINNERTYTV`
+  lettering is carved into the northern cliff as world geometry, not UI text.
 - **A designed arrival** — 60 × 40 tiles (960 × 640 px), about four screens.
-  You arrive at a symmetrical plaza built around the gate, on a darker stone
-  dais between two cobalt banners. A three-tile avenue leaves east and narrows
-  into a trail that turns south to a timber live deck over the lake.
+  You arrive on a curved path below a cosy streamer lodge, with water around
+  the island, a stream and timber bridge to the Forest Trail, a ridge route for
+  the future, and a lakeside Live Deck.
 - **Movement** — four directions, normalised diagonals, Arcade Physics
   collision against water, cliffs, trees, lanterns and props.
 - **Camera** — smooth follow, clamped to world bounds.
@@ -75,7 +75,9 @@ npm run preview
   screen instead of a cramped game with a virtual joystick.
 
 Rendering is a fixed **480 × 270** virtual resolution, scaled up by whole
-multiples with nearest-neighbour filtering, so pixels stay square and sharp.
+multiples with nearest-neighbour filtering. At awkward viewport ratios the
+canvas crops by a small amount at its edge rather than exposing a dark frame,
+so the game still fills the browser with square, sharp pixels.
 
 ## Architecture
 

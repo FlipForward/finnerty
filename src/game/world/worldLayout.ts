@@ -5,12 +5,11 @@
  * They are meant to be edited by hand — open the file, redraw a row, reload.
  * Nothing in WorldScene hardcodes a coordinate.
  *
- * Layout intent: every structure is placed deliberately and the woodland only
- * decorates around it. The plaza is symmetrical about column 14, an accent
- * centreline runs from the spawn tile up to the gate, and a three-tile avenue
- * leaves the plaza east before narrowing into a trail that turns south to the
- * live deck. Sightlines along that route are kept clear of trees on purpose,
- * so the player can always see where the path goes next.
+ * Layout intent: this is Arrival Island, a real lobby rather than a menu
+ * plaza. The arrival path curves up from the southern water to the lodge,
+ * then breaks into three readable routes: woodland across the timber bridge,
+ * a lakeside Live Deck, and a sealed cliff route. Trees and shorelines frame
+ * the paths without turning the map into a repeated tile matrix.
  *
  * Ground legend                      Prop legend
  *   .  grass                           (space)  nothing
@@ -18,7 +17,7 @@
  *   d  bare dirt                       P        pine           (solid)
  *   p  stone path                      b        bush           (solid)
  *   s  stone slab (plaza)              R        boulder        (solid)
- *   a  accent slab (cobalt inlay)      r        stone          (solid)
+ *   a  accent slab (dressed stone)     r        stone          (solid)
  *   W  timber deck                     l        lantern        (solid, light)
  *   _  shore                           c        crate          (solid)
  *   ~  water  (solid)                  B        banner         (solid, light)
@@ -40,40 +39,40 @@ const GROUND_ROWS = [
   '############################################################',
   '############################################################',
   '############################################################',
-  '############.........##################################...##',
-  '##########.....,.,......######.........##############.....##',
-  '########..............,............,.,...##########.....,.##',
-  '###.,.................,......,......,.......####..,.......##',
-  '###....d..dddd,.d.dd.d...,,...............................##',
-  '###...d..ssaaaaaaassddd..............,..............,.....##',
-  '###...ddsssaaaaaaasssd..............................,.....##',
-  '###....ssssaaaaaaassss.....,..,....,,.,...................##',
-  '###,..dssssaaaaaaassss..,........................,........##',
-  '###..,.sssssssasssssssppppppppppppppppp......,............##',
-  '###....sssssssasssssssppppppppppppppppp.,...,.............##',
-  '###...dsssssssasssssssppppppppppppppppp...............,...##',
-  '###....sssssssasssssssd...,....,.....pp..,................##',
-  '###...dsssssssssssssssd,.............pp.........,....,,...##',
-  '###.,.d.sssssssssssssd.......,.......pp.......,...........##',
-  '###...dddsssssssssssddd.......,......pp..............,....##',
-  '###...d..ddd.dd.dd..ddd,.............pp....,..........,...##',
-  '###...............,...,..,,...,....,.pp...................##',
-  '###.................,...,............pp...................##',
-  '###..........,....,...............,,.pp.,.WWWWWWWWWWW.....##',
-  '###...............,................,.pp...WWWWWWWWWWW_~~~~~~',
-  '###..................................pp...WWWWWWWWWWW_WW~~~~',
-  '###.......................,..........ppdddWWWWWWWWWWW._W~~~~',
-  '###......,...........................ppdddWWWWWWWWWWW_WW~~~~',
-  '###..........................,,...,..pppppWWWWWWWWWWW_WW~~~~',
-  '###..,.........,.......,,............pppppWWWWWWWWWWW~~~~~~~',
-  '###...............,.......,............dddWWWWWWWWWWW~~~~~~~',
-  '###.............,......,.......,....,..ddd......_~~~~~~~~~~~',
-  '###.........................................._~~~~~~~~~~~~~~',
-  '###................,.....,.........,...____~~~~~~~~~~~~~~~~~',
-  '###..,............._,...............___~~~~~~~~~~~~~~~~~~~~~',
-  '###....,...,.._____~______........__~~~~~~~~~~~~~~~~~~~~~~~~',
-  '___......,.___~~~~~~~~~~~~________~~~~~~~~~~~~~~~~~~~~~~~~~~',
-  '~~~________~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '############################################################',
+  '############################################################',
+  '###########.....................................############',
+  '#######..............................................#######',
+  '####....................................................####',
+  '###....,..,___..,.,.....,..,.......,...,..,...,.....,....###',
+  '##........._~_...........................pdddd............##',
+  '##........._~__.........................pd................##',
+  '##........._~~_........................pd.................##',
+  '##.....,..,_~~_.,.,.....,..,.......,..pd..,...,.....,.....##',
+  '##........._~__......................pd...................##',
+  '##........._~_......................pd....................##',
+  '##........_WWWWddddddddddddddd.....pd.....................##',
+  '##........_~~_...............pd...pd...........___________##',
+  '##........_~~_................pd.pd............_~~~~~~~~~~~~',
+  '##.....,..,~~_..,.,.....,..,..pd...,...,..,.._,_~~~~~~~~~~~~',
+  '##........__~_................pd............__~~~~~~~~~~~~~~',
+  '##........._~_.................pddd........__~~~~~~~~~~~~~~~',
+  '##........._~_.................pd.pdd.....__~~~~~~~~~~~~~~~~',
+  '##........._~_................pd....pdd..__~~~~~~~~~~~~~~~~~',
+  '##.....,..,___..,.,.....,..,..pd...,..pdd_~~~~~~~~~~~~~~~~~~',
+  '##...........................pd........_pddWWWWWWWWWW~~~~~~~',
+  '##...........................pd.......__~~pWWWWWWWWWW~~~~~~~',
+  '##...........................pd......__~~~~~WWWWWWWW~~~~~~~~',
+  '###....,..,.....,.,.....,..,.pd....,__~~~~~~~WWWWWW~~~~~~~~~',
+  '####.........................pd...___~~~~~~~~~~~~~~~~~~~~~~~',
+  '######____...................pd.___~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~____..................._~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~____................_________________~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~____.......................____~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~_____................____~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~_____.........____~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~___________~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
 ]
@@ -83,40 +82,40 @@ const PROP_ROWS = [
   '                                                            ',
   '                                                            ',
   '                                                            ',
-  '            T Tbf   b                                       ',
-  '            b       fPTP       f Tbb                        ',
-  '          w        f           TTPb  w P                 T  ',
-  '   b    w          ff           fT       w P    b P     w   ',
-  '         w          r   ww     P rw   w      TwT            ',
-  '                           rwr b  rw    r       w           ',
-  '   w                     ff     w        rf         T       ',
-  '        l B       B l                  ffff r    b   ww     ',
-  '   T r                    lf            w       T T  P      ',
-  '                                        fff  w w TTP    fT  ',
-  '   w                                   f  w       T TPr  w  ',
-  '                                       f f f    w P  w wf   ',
-  '    w                        r  l      ww     ww  b      P  ',
-  '         l         l      w                         w   w   ',
-  '   P    l           l                            f       P  ',
-  '   T f                   w   T   w  l         r  w    Tb    ',
-  '   f        w     ff      b  T  f  f     w    f rfwf  wb    ',
-  '   P  f         f  f  w   T T Tf w  w     r w  f  fw        ',
-  '    ww          f   rw  w  T  b ff             fff    w     ',
-  '     ff w TTPw  r w  f       b  fffw                    r   ',
-  '   f w   bP        Tf         w ffff   l   B       l        ',
-  '   w    w   T     b          w                              ',
-  '      w  w r w w   PTTw  w w   R                            ',
-  '   w    r fwf      b  w   wff r   w                 c       ',
-  '   P     f R   w       wff     RR                           ',
-  '   P    TPP rr         w  f         w      l=     =lc       ',
-  '     w   Pffrff w w   w f  w f R                            ',
-  '        T Tf             wf     T    w     f                ',
-  '        b w       w     TfPb       T   f                    ',
-  '     w     w   w      wT w bw  bTTP      P                  ',
-  '            r       w    b      T    b                      ',
-  '   T       w        b TT          P                         ',
-  '      f w                 T  PP                             ',
-  '     b T                                                    ',
+  '                                                            ',
+  '                                                            ',
+  '                                                            ',
+  '                                                            ',
+  '                                                            ',
+  '                                        T                   ',
+  '        P       T  P    T           T  P     P      P       ',
+  '    T     b  r      T              P              T         ',
+  '               P      wP              w    w            P   ',
+  '      w          w   f          w      b    b               ',
+  '              r   f   b f  w       b                  T     ',
+  '          w      b       b               r      b    w      ',
+  '       T                             r                      ',
+  '         R                                     T    b       ',
+  '    P           r         B       B          r              ',
+  '       b               r l        l        R                ',
+  '                b           f   f   b         R        T    ',
+  '        w  R        b                  b    f               ',
+  '     T      w      f     w         f              R         ',
+  '              R w      f               f       f            ',
+  '          P          w           rw      l          l       ',
+  '         f   r P  T           f      w                      ',
+  '        T           f                                       ',
+  '               f  r              T            =  c          ',
+  '          w   w       T      b              l   =  c        ',
+  '           R     R        P    P   R                        ',
+  '                        w                                   ',
+  '                                                            ',
+  '                                                            ',
+  '                                                            ',
+  '                                                            ',
+  '                                                            ',
+  '                                                            ',
+  '                                                            ',
   '                                                            ',
   '                                                            ',
 ]
@@ -189,13 +188,18 @@ export interface PropPlacement {
   tileY: number
 }
 
-/** Where the player stands when the world begins: below the gate, on the centreline. */
-export const SPAWN_TILE = { x: 14, y: 16 } as const
+/** Arrival path, in the lower foreground of the lodge. */
+export const SPAWN_TILE = { x: 29, y: 26 } as const
+
+/** Feature placement stays data-driven so a finished 64x64 lodge is a file swap. */
+export const LOBBY_FEATURES = {
+  lodge: { tileX: 30, tileY: 17 },
+} as const
 
 /**
- * The giant MRFINNERTYTV lettering, sitting on the cliff band that closes off
- * the north of the map. It is world geometry, not UI: you see it from the plaza
- * by walking north, and the title screen simply points the camera at it.
+ * The giant MRFINNERTYTV lettering is carved into the northern cliff band. It
+ * is world geometry, not UI: the arrival screen points the camera at it, but
+ * the player can stand in front of the hillside once play begins.
  */
 export const HILLSIDE = {
   text: 'MRFINNERTYTV',
@@ -203,14 +207,14 @@ export const HILLSIDE = {
   scale: 5,
   /** Centre of the lettering, in world pixels. */
   x: WORLD_WIDTH / 2,
-  y: 34,
+  y: 68,
 } as const
 
-/** Camera framing for the title state — a slow drift across the hillside. */
+/** Camera framing for the arrival state — cliff lettering and lodge in one view. */
 export const TITLE_CAMERA = {
   x: HILLSIDE.x,
-  y: 96,
-  driftX: 34,
+  y: 194,
+  driftX: 20,
   driftSeconds: 22,
 } as const
 
