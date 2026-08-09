@@ -3,11 +3,13 @@ import { PixelText } from './PixelText'
 /**
  * Shown on narrow and touch-only devices.
  *
- * V1 is a keyboard game. Rather than bolt a virtual joystick onto a world that
- * was not designed for one, this says so plainly and leaves a slot for the
- * mobile-appropriate content (clips, stream links) that comes later.
+ * The valley is a keyboard world. Rather than bolt a virtual joystick onto a
+ * map that was not designed for one, this says so plainly and sends people to
+ * the one thing that genuinely works on a phone: the stream itself.
  */
 export function MobileFallback() {
+  const channel = import.meta.env.VITE_TWITCH_CHANNEL?.trim() ?? ''
+
   return (
     <div className="fallback">
       <div className="fallback__inner">
@@ -24,16 +26,20 @@ export function MobileFallback() {
         <PixelText text="BEST ON DESKTOP" scale={2} color="#68a8ff" shadowColor="#14202b" />
 
         <p className="fallback__body">
-          The world is a keyboard game — you walk it with WASD. Come back on a desktop or laptop and
-          the whole thing opens up.
+          The valley is a keyboard world — you walk it with WASD, and the gate only opens on a proper
+          screen. Come back on a desktop or laptop and it is all there.
         </p>
 
-        <div className="placeholder placeholder--tall">
-          <span className="placeholder__label">CLIPS &amp; STREAM</span>
-          <span className="placeholder__note">
-            Mobile-friendly stream and clips land here in a later phase.
-          </span>
-        </div>
+        {channel && (
+          <a
+            className="button fallback__cta"
+            href={`https://www.twitch.tv/${encodeURIComponent(channel)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            WATCH ON TWITCH
+          </a>
+        )}
       </div>
     </div>
   )

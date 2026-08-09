@@ -7,12 +7,14 @@ untangling architecture.
 ## In V1
 
 - Title state that is a live view of the world, not a web hero section.
-- One playable map, 60 × 40 tiles (960 × 640 px), roughly four screens.
+- One playable map, 60 × 40 tiles (960 × 640 px), roughly four screens: an
+  arrival plaza around the gate, an avenue east, a trail south, and a timber
+  live deck over the lake.
 - Walking, four-direction animation, normalised diagonals, arcade collision.
 - Camera follow, clamped to world bounds.
-- A reusable interaction system with four landmarks on it.
-- A day/night cycle with lantern and portal lighting.
-- A DOM overlay layer for dialogs and the future Twitch player.
+- A reusable interaction system with five landmarks on it.
+- A day/night cycle with lantern, banner and gate lighting.
+- Working Twitch player and chat embeds on the live deck.
 - A desktop-only posture with an honest mobile fallback.
 
 ## Deliberately not built
@@ -34,28 +36,38 @@ dead flags, and no half-wired UI for them.
 | Achievements / quests         | —                                                                                           |
 | Combat, health, damage        | No hostiles, no health model, no RPG stats.                                                 |
 | Extra biomes                  | The portal is the seam where they attach. It currently only opens a dialog.                 |
-| Real Twitch integration       | `LiveOverlay` is a structured placeholder. See below.                                       |
+| Live/offline detection        | Twitch's own embed reports it. We never compute or fake it. See below.                      |
 | Audio                         | No music or sound effects.                                                                  |
 | Mobile controls               | No virtual joystick, by decision. Narrow/touch devices get the fallback screen.             |
 | Final art                     | Every texture is generated at runtime. See `docs/ART_BIBLE.md`.                              |
 
 ## Twitch: what is and is not there
 
-`src/components/LiveOverlay.tsx` is a real component with the correct
-architecture and no functionality:
+`src/components/LiveOverlay.tsx` now embeds Twitch for real — the official
+player and the official chat, as two `<iframe>` elements.
 
 - It **is** a DOM overlay above the canvas, because Twitch embeds are iframes
   and cannot be drawn inside WebGL — and Twitch requires the player to be
-  visible and unobstructed.
-- It **does** resolve the two values the embed needs: the channel from
-  `VITE_TWITCH_CHANNEL`, and the `parent` parameter from `window.location.hostname`
-  at runtime (so localhost, previews and production all work from one build).
-- It **does not** contain any credentials, API calls, live/offline detection, or
-  a viewer count. Those need a Helix token, which requires a server — none of it
-  belongs in a client bundle, and none of it is faked.
+  visible and unobstructed. Nothing is layered on top of either frame.
+- The channel comes from `VITE_TWITCH_CHANNEL`; the `parent` parameter is read
+  from `window.location.hostname` at runtime, so localhost, preview deploys and
+  production all work from a single build with no hardcoded domain.
+- It contains **no credentials, no Helix API calls, no invented live status and
+  no viewer count**. Whether the channel is live is reported by Twitch's own
+  embed. Anything more would need a server-side token, which does not belong in
+  a client bundle.
+- If `VITE_TWITCH_CHANNEL` is missing, the panel says the deck is dark rather
+  than showing a configuration error to a visitor. The operator-facing hint is
+  dev-only.
 
-Swapping in the real embeds is two `<iframe>` elements; the TODO in the
-component spells out the exact markup and the gotchas.
+**Deployment note:** Vite inlines env vars at build time, so setting
+`VITE_TWITCH_CHANNEL` in the host's environment requires a redeploy to take
+effect — it is not read at runtime.
+
+One genuine limitation: while focus is inside a cross-origin iframe, key events
+go to Twitch rather than to this page, so Escape cannot be observed there. That
+is a browser security boundary. The close button is always visible and the
+backdrop is clickable, which covers it.
 
 ## Known limitations worth knowing about
 
@@ -67,9 +79,12 @@ component spells out the exact markup and the gotchas.
 - **Placeholder art is not final.** Trees, the player and props are simple
   generated shapes. They obey the art bible so the world reads correctly, but
   they are meant to be replaced wholesale.
-- **Parts of the map are decorative.** The treeline seals off pockets of grass
-  near the map edges that the player cannot reach. This is intentional world
-  boundary, not a pathfinding bug.
+- **Parts of the map are decorative.** The boundary treeline seals off pockets
+  of grass near the map edges that the player cannot reach — about 10% of the
+  walkable tiles. This is intentional world boundary, not a pathfinding bug.
+- **The gate is solid.** Walking straight north from the spawn tile stops at
+  the portal. The route to the hillside lettering goes around the west side of
+  the plaza, which is kept clear of trees on purpose.
 - **No loading screen of substance.** Textures are generated in a few
   milliseconds, so the "LOADING" state is nearly invisible. When real assets are
   loaded over the network this will need a proper progress bar in `BootScene`.

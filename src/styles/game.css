@@ -198,40 +198,75 @@
 
 .live {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 14px;
+  /* Bound the whole thing to the viewport so the player is never pushed
+     off-screen or overlapped by the panel chrome. */
+  height: min(62vh, 560px);
+  min-height: 320px;
 }
 
-.live__player .placeholder {
-  /* Reserve the shape of a 16:9 player so the layout does not jump when the
-     real embed replaces it. */
-  aspect-ratio: 16 / 9;
-  min-height: 0;
+.live__player,
+.live__chat {
+  position: relative;
+  min-width: 0;
+  border: 2px solid var(--stone-shadow);
+  background: #000;
+}
+
+/* The embeds fill their frames exactly. Nothing is layered on top of them:
+   Twitch requires the player to stay visible and unobstructed. */
+.live iframe {
+  display: block;
+  width: 100%;
   height: 100%;
+  border: 0;
 }
 
-.live__chat .placeholder {
-  height: 100%;
-}
-
-.live__debug {
-  margin: 14px 0 0;
-  font-size: 11px;
-  color: var(--stone-shadow);
-  letter-spacing: 0.08em;
-}
-
-.live__debug code {
+.live__dark {
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  text-align: center;
+  min-height: 260px;
+  padding: 32px;
+  border: 2px solid var(--stone-shadow);
   color: var(--stone-mid);
 }
 
-@media (max-width: 1080px) {
+.live__dark p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.live__dark-hint {
+  color: var(--stone-shadow);
+  font-size: 11px;
+}
+
+.live__footnote {
+  margin: 12px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.live__footnote a {
+  color: var(--light-blue);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.live__footnote a:hover,
+.live__footnote a:focus-visible {
+  border-bottom-color: var(--light-blue);
+}
+
+@media (max-width: 1120px) {
   .live {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .live__chat .placeholder {
-    min-height: 160px;
+    grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
+    height: min(72vh, 620px);
   }
 }
 
@@ -278,6 +313,8 @@
   line-height: 1.75;
 }
 
-.fallback .placeholder {
-  width: 100%;
+.fallback__cta {
+  margin-top: 6px;
+  text-decoration: none;
+  display: inline-block;
 }

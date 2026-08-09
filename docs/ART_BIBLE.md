@@ -106,30 +106,52 @@ this.load.spritesheet(TextureKeys.player, 'assets/characters/player.png', {
 The generators check whether a key already exists and stand down if it does, so
 loaded art always wins. Delete the corresponding generator once its asset lands.
 
-| Texture key       | Size      | Destination                          |
-| ----------------- | --------- | ------------------------------------ |
-| `tileset`         | 16 × 128  | `public/assets/tiles/`               |
-| `player`          | 256 × 256 | `public/assets/characters/`          |
-| `prop-tree`       | 64 × 64   | `public/assets/props/`               |
-| `prop-tree-small` | 64 × 64   | `public/assets/props/`               |
-| `prop-rock`       | 64 × 64   | `public/assets/props/`               |
-| `prop-lantern`    | 64 × 64   | `public/assets/props/`               |
-| `prop-portal`     | 64 × 64   | `public/assets/props/`               |
-| `prop-sign`       | 64 × 64   | `public/assets/props/`               |
-| `prop-live-sign`  | 64 × 64   | `public/assets/props/`               |
-| `fx-light`        | 128 × 128 | `public/assets/ui/`                  |
-| `fx-shadow`       | 22 × 9    | `public/assets/ui/`                  |
+| Texture key      | Size      | Destination                 |
+| ---------------- | --------- | --------------------------- |
+| `tileset`        | 16 × 160  | `public/assets/tiles/`      |
+| `player`         | 256 × 256 | `public/assets/characters/` |
+| `prop-tree`      | 64 × 64   | `public/assets/props/`      |
+| `prop-pine`      | 64 × 64   | `public/assets/props/`      |
+| `prop-bush`      | 64 × 64   | `public/assets/props/`      |
+| `prop-boulder`   | 64 × 64   | `public/assets/props/`      |
+| `prop-stone`     | 64 × 64   | `public/assets/props/`      |
+| `prop-lantern`   | 64 × 64   | `public/assets/props/`      |
+| `prop-crate`     | 64 × 64   | `public/assets/props/`      |
+| `prop-banner`    | 64 × 64   | `public/assets/props/`      |
+| `prop-flowers`   | 64 × 64   | `public/assets/props/`      |
+| `prop-weeds`     | 64 × 64   | `public/assets/props/`      |
+| `prop-cable`     | 64 × 64   | `public/assets/props/`      |
+| `prop-portal`    | 64 × 64   | `public/assets/props/`      |
+| `prop-sign`      | 64 × 64   | `public/assets/props/`      |
+| `prop-live-sign` | 64 × 64   | `public/assets/props/`      |
+| `fx-light`       | 128 × 128 | `public/assets/ui/`         |
+| `fx-shadow`      | 22 × 9    | `public/assets/ui/`         |
 
 ### Tileset row order
 
 One 16 × 16 tile per row, stacked into a single column. The order is load-bearing —
 it must match `Tile` in
-[`src/game/world/worldLayout.ts`](../src/game/world/worldLayout.ts):
+[`src/game/world/worldLayout.ts`](../src/game/world/worldLayout.ts). New tiles are
+appended so existing indices never shift under delivered art:
 
 `0` grass · `1` grass tuft · `2` dirt · `3` stone path · `4` stone slab ·
-`5` shore · `6` water · `7` cliff
+`5` shore · `6` water · `7` cliff · `8` accent slab · `9` timber deck
 
 Tiles `6` (water) and `7` (cliff) are solid.
+
+The accent slab is the darker dressed stone used for the gate dais and the short
+aisle leading to it. It deliberately carries **no blue**: an earlier version
+inlaid cobalt into it and the plaza floor turned into a field of blue dots. In
+the arrival plaza the gate and the two banners should be the only blue there is.
+
+### Which props are solid
+
+Solidity is decided by one table — `PROP_COLLIDERS` in
+[`src/game/scenes/WorldScene.ts`](../src/game/scenes/WorldScene.ts) — where
+`null` means the player walks straight through. Flowers, weeds and cable runs
+are walk-through decor, and they carry most of the world's visual density.
+That is what lets the woodland stay thin enough to see across without the open
+ground looking bare.
 
 ## Text
 

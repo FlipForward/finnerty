@@ -1,19 +1,30 @@
 /**
- * The first playable slice of MrFinnertyTV World, as data.
+ * The arrival valley of MrFinnertyTV World, as data.
  *
  * Two 60x40 character grids: one for ground tiles, one for scenery props.
  * They are meant to be edited by hand — open the file, redraw a row, reload.
  * Nothing in WorldScene hardcodes a coordinate.
  *
+ * Layout intent: every structure is placed deliberately and the woodland only
+ * decorates around it. The plaza is symmetrical about column 14, an accent
+ * centreline runs from the spawn tile up to the gate, and a three-tile avenue
+ * leaves the plaza east before narrowing into a trail that turns south to the
+ * live deck. Sightlines along that route are kept clear of trees on purpose,
+ * so the player can always see where the path goes next.
+ *
  * Ground legend                      Prop legend
  *   .  grass                           (space)  nothing
- *   ,  grass with a tuft               T        tree        (solid)
- *   d  bare dirt                       t        small tree  (solid)
- *   p  stone path                      r        rock        (solid)
- *   s  stone slab (plaza / deck)       l        lantern     (solid, light source)
- *   _  shore
- *   ~  water  (solid)
- *   #  cliff  (solid)
+ *   ,  grass with a tuft               T        broadleaf tree (solid)
+ *   d  bare dirt                       P        pine           (solid)
+ *   p  stone path                      b        bush           (solid)
+ *   s  stone slab (plaza)              R        boulder        (solid)
+ *   a  accent slab (cobalt inlay)      r        stone          (solid)
+ *   W  timber deck                     l        lantern        (solid, light)
+ *   _  shore                           c        crate          (solid)
+ *   ~  water  (solid)                  B        banner         (solid, light)
+ *   #  cliff  (solid)                  f        flowers        (decor)
+ *                                      w        weeds          (decor)
+ *                                      =        cable run      (decor)
  */
 
 import { TILE_SIZE } from '../config'
@@ -29,39 +40,39 @@ const GROUND_ROWS = [
   '############################################################',
   '############################################################',
   '############################################################',
-  '############..,.##########,...,...##########################',
-  '##########.........#####.,..........#######......###########',
-  '########.......,................,..,..##..,........#########',
-  '#######.....,.d.,........,..........,..,.............#######',
-  '###..,..........,...............,.........,...,....,...,..##',
-  '###...d.ddd.d.d..ddd.d....................................##',
-  '###......ssssssssssd.............,...,,..................,##',
-  '###.,.d.ssssssssssssdd.........,.,.....,.....,...,...,,...##',
-  '###....ssssssssssssssd...d,........,.d..................,.##',
-  '###...,ssssssssssssssppppppppppppppppppppp................##',
-  '###...dssssssssssssssppppppppppppppppppppp........,,......##',
-  '###,..dssssssssssssss.........,d..,.....pp.......,.......,##',
-  '###....ssssssssssssss....,..............pp..d,......,.....##',
-  '###...d.ssssssssssss.d...............,..pp................##',
-  '###...dd.ssssssssssd..................,.pp...,.,..........##',
-  '###,..d..ddddd.dd,dd....................pp....,,....,.....##',
-  '###.......,...,...,......,.....,........pp..,.............##',
-  '###........................,..,.......d.pp.......,........##',
-  '###..........,...............,...,......pp.........,......##',
-  '##.,......,...................d....d....pp...........,...,##',
-  '##..........,..........,..,.,,..........ppssssssss....,...##',
-  '##......................,............,..ppssssssss.....,..##',
-  '##..,.........,.....,..,........,.....d.ppssssssss~~~~~~~~~~',
-  '##..........................,,...,......ppssssssssd_~~~~~~~~',
-  '##........,........,..............,.....ppssssssss.._~~~~~~~',
-  '##........,........,...,......d.........ppppppppppp._~~~~~~~',
-  '##...,........,.,.................,.....ppppppppppp_~~~~~~~~',
-  '##.....,...,..,.,.....,..........d,.......d......_~~~~~~~~~~',
-  '##........,......,............................_~~~~~~~~~~~~~',
-  '##...,..............................._______~~~~~~~~~~~~~~~~',
-  '##.............,,...,.............___~~~~~~~~~~~~~~~~~~~~~~~',
-  '##...........__________.........__~~~~~~~~~~~~~~~~~~~~~~~~~~',
-  '___........__~~~~~~~~~~_________~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '############.........##################################...##',
+  '##########.....,.,......######.........##############.....##',
+  '########..............,............,.,...##########.....,.##',
+  '###.,.................,......,......,.......####..,.......##',
+  '###....d..dddd,.d.dd.d...,,...............................##',
+  '###...d..ssaaaaaaassddd..............,..............,.....##',
+  '###...ddsssaaaaaaasssd..............................,.....##',
+  '###....ssssaaaaaaassss.....,..,....,,.,...................##',
+  '###,..dssssaaaaaaassss..,........................,........##',
+  '###..,.sssssssasssssssppppppppppppppppp......,............##',
+  '###....sssssssasssssssppppppppppppppppp.,...,.............##',
+  '###...dsssssssasssssssppppppppppppppppp...............,...##',
+  '###....sssssssasssssssd...,....,.....pp..,................##',
+  '###...dsssssssssssssssd,.............pp.........,....,,...##',
+  '###.,.d.sssssssssssssd.......,.......pp.......,...........##',
+  '###...dddsssssssssssddd.......,......pp..............,....##',
+  '###...d..ddd.dd.dd..ddd,.............pp....,..........,...##',
+  '###...............,...,..,,...,....,.pp...................##',
+  '###.................,...,............pp...................##',
+  '###..........,....,...............,,.pp.,.WWWWWWWWWWW.....##',
+  '###...............,................,.pp...WWWWWWWWWWW_~~~~~~',
+  '###..................................pp...WWWWWWWWWWW_WW~~~~',
+  '###.......................,..........ppdddWWWWWWWWWWW._W~~~~',
+  '###......,...........................ppdddWWWWWWWWWWW_WW~~~~',
+  '###..........................,,...,..pppppWWWWWWWWWWW_WW~~~~',
+  '###..,.........,.......,,............pppppWWWWWWWWWWW~~~~~~~',
+  '###...............,.......,............dddWWWWWWWWWWW~~~~~~~',
+  '###.............,......,.......,....,..ddd......_~~~~~~~~~~~',
+  '###.........................................._~~~~~~~~~~~~~~',
+  '###................,.....,.........,...____~~~~~~~~~~~~~~~~~',
+  '###..,............._,...............___~~~~~~~~~~~~~~~~~~~~~',
+  '###....,...,.._____~______........__~~~~~~~~~~~~~~~~~~~~~~~~',
+  '___......,.___~~~~~~~~~~~~________~~~~~~~~~~~~~~~~~~~~~~~~~~',
   '~~~________~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
@@ -72,45 +83,50 @@ const PROP_ROWS = [
   '                                                            ',
   '                                                            ',
   '                                                            ',
-  '                           TT  tT                           ',
-  '          TT t    t              TTT       T   Tt           ',
-  '        T      T    T  TT tT   T  TT T  Ttt   TTT T         ',
-  '       T      l    T tT TT tT T    TTT  tTt  T   TT         ',
-  '   TT                  T TtTT   r tT  T      r     T   T    ',
-  '   T             l      T  t      TT  T  T            T     ',
-  '   tT                   T TT  T     T                 T  t  ',
-  '    T   l          l                TT              r       ',
-  '                         l           l                   T  ',
-  '                                                   TT    t  ',
-  '                                                  tTT       ',
-  '   TT                          l                T Tt    t   ',
-  '    T                            TTT        l  TT  TT   t   ',
-  '    T   l          l            TtT            T TT tT      ',
-  '   T                          T TT tt             tTtT      ',
-  '                               TT               TTT         ',
-  '    T                           t T                         ',
-  '                                 T    l                  t  ',
-  '             TTT                                 r       t  ',
-  '  t    T     T tT         T                             tT  ',
-  '   T      T T   T T   T                             T  TT   ',
-  '   T     T    TtT      TTt T  T                         T   ',
-  '   Tt             Tr     TT           l                     ',
-  '     T     T   T     TTTT                         l         ',
-  '  TT       r    r    T  T t                                 ',
-  '        T  T          T               T        l            ',
-  '  T    Tt    T  T                                           ',
-  '  T   T TT T                        t     l                 ',
-  '       TTTtt               T               T  T             ',
-  '          TT r               r          T                   ',
-  '      t     T T  T T T          TTt                         ',
-  '             T T t t  T TT t  T TT                          ',
-  '   TT   T  T             TTT tT                             ',
-  '   TTt T  T                                                 ',
+  '            T Tbf   b                                       ',
+  '            b       fPTP       f Tbb                        ',
+  '          w        f           TTPb  w P                 T  ',
+  '   b    w          ff           fT       w P    b P     w   ',
+  '         w          r   ww     P rw   w      TwT            ',
+  '                           rwr b  rw    r       w           ',
+  '   w                     ff     w        rf         T       ',
+  '        l B       B l                  ffff r    b   ww     ',
+  '   T r                    lf            w       T T  P      ',
+  '                                        fff  w w TTP    fT  ',
+  '   w                                   f  w       T TPr  w  ',
+  '                                       f f f    w P  w wf   ',
+  '    w                        r  l      ww     ww  b      P  ',
+  '         l         l      w                         w   w   ',
+  '   P    l           l                            f       P  ',
+  '   T f                   w   T   w  l         r  w    Tb    ',
+  '   f        w     ff      b  T  f  f     w    f rfwf  wb    ',
+  '   P  f         f  f  w   T T Tf w  w     r w  f  fw        ',
+  '    ww          f   rw  w  T  b ff             fff    w     ',
+  '     ff w TTPw  r w  f       b  fffw                    r   ',
+  '   f w   bP        Tf         w ffff   l   B       l        ',
+  '   w    w   T     b          w                              ',
+  '      w  w r w w   PTTw  w w   R                            ',
+  '   w    r fwf      b  w   wff r   w                 c       ',
+  '   P     f R   w       wff     RR                           ',
+  '   P    TPP rr         w  f         w      l=     =lc       ',
+  '     w   Pffrff w w   w f  w f R                            ',
+  '        T Tf             wf     T    w     f                ',
+  '        b w       w     TfPb       T   f                    ',
+  '     w     w   w      wT w bw  bTTP      P                  ',
+  '            r       w    b      T    b                      ',
+  '   T       w        b TT          P                         ',
+  '      f w                 T  PP                             ',
+  '     b T                                                    ',
   '                                                            ',
   '                                                            ',
 ]
 
-/** Tile indices into the generated tileset (one row per index). */
+/**
+ * Tile indices into the generated tileset (one row per index).
+ *
+ * The order is load-bearing and matches docs/ART_BIBLE.md. New tiles are
+ * appended so existing indices never shift under delivered art.
+ */
 export const Tile = {
   Grass: 0,
   GrassTuft: 1,
@@ -120,6 +136,8 @@ export const Tile = {
   Shore: 5,
   Water: 6,
   Cliff: 7,
+  Accent: 8,
+  Deck: 9,
 } as const
 
 const GROUND_CHARS: Record<string, number> = {
@@ -128,6 +146,8 @@ const GROUND_CHARS: Record<string, number> = {
   d: Tile.Dirt,
   p: Tile.Path,
   s: Tile.Slab,
+  a: Tile.Accent,
+  W: Tile.Deck,
   _: Tile.Shore,
   '~': Tile.Water,
   '#': Tile.Cliff,
@@ -136,13 +156,31 @@ const GROUND_CHARS: Record<string, number> = {
 /** Tiles the player cannot walk onto. Props carry their own bodies. */
 export const SOLID_TILES: number[] = [Tile.Water, Tile.Cliff]
 
-export type PropKind = 'tree' | 'treeSmall' | 'rock' | 'lantern'
+export type PropKind =
+  | 'tree'
+  | 'pine'
+  | 'bush'
+  | 'boulder'
+  | 'stone'
+  | 'lantern'
+  | 'crate'
+  | 'banner'
+  | 'flowers'
+  | 'weeds'
+  | 'cable'
 
 const PROP_CHARS: Record<string, PropKind> = {
   T: 'tree',
-  t: 'treeSmall',
-  r: 'rock',
+  P: 'pine',
+  b: 'bush',
+  R: 'boulder',
+  r: 'stone',
   l: 'lantern',
+  c: 'crate',
+  B: 'banner',
+  f: 'flowers',
+  w: 'weeds',
+  '=': 'cable',
 }
 
 export interface PropPlacement {
@@ -151,12 +189,12 @@ export interface PropPlacement {
   tileY: number
 }
 
-/** Where the player stands when the world begins: the middle of the lobby plaza. */
-export const SPAWN_TILE = { x: 13, y: 15 } as const
+/** Where the player stands when the world begins: below the gate, on the centreline. */
+export const SPAWN_TILE = { x: 14, y: 16 } as const
 
 /**
  * The giant MRFINNERTYTV lettering, sitting on the cliff band that closes off
- * the north of the map. It is world geometry, not UI: you see it from the lobby
+ * the north of the map. It is world geometry, not UI: you see it from the plaza
  * by walking north, and the title screen simply points the camera at it.
  */
 export const HILLSIDE = {

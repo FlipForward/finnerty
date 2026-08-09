@@ -6,79 +6,96 @@ interface Props {
 }
 
 /**
- * Placeholder for the Twitch integration.
+ * The Live Deck: Twitch's official player and chat embeds.
  *
- * ARCHITECTURE — this is why it is a DOM overlay and not drawn in the canvas:
- * Twitch's embeds are iframes. They cannot be rendered inside WebGL, and
- * Twitch's terms require the player to be visible and unobstructed. So the
+ * ARCHITECTURE — this is a DOM overlay rather than something drawn in the
+ * canvas because Twitch's embeds are iframes. They cannot be rendered inside
+ * WebGL, and Twitch requires the player to be visible and unobstructed. So the
  * live view is a normal HTML layer stacked above the Phaser canvas, and the
  * game underneath is paused (WorldScene locks input while an overlay is open).
  *
- * TODO(twitch): replace the two placeholder panels below with Twitch's official
- * embeds. Nothing else in this component needs to change — the channel and
- * parent values are already resolved correctly:
+ * No credentials, no Helix API, no invented live status or viewer count. The
+ * embed reports whether the channel is live entirely on its own — which is the
+ * only honest way to show it without a server-side token.
  *
- *   <iframe
- *     src={`https://player.twitch.tv/?channel=${channel}&parent=${parent}`}
- *     allowFullScreen
- *   />
- *   <iframe src={`https://www.twitch.tv/embed/${channel}/chat?parent=${parent}`} />
- *
- * Notes for whoever does that:
- *   - `parent` MUST be the hostname serving the page (no protocol, no port).
- *     It is read from window.location at runtime, so localhost, a preview
- *     deploy and production all work without a rebuild.
- *   - Every Twitch host serving the embed needs its own `parent` entry.
- *   - Live/offline state and viewer counts require the Helix API, which needs a
- *     server-side token. No credentials belong in this client bundle, and this
- *     component deliberately shows no invented status or viewer numbers.
+ * Note on Escape: while focus is inside a cross-origin iframe, key events go to
+ * Twitch, not to this page, so the Escape handler in GameShell cannot see them.
+ * That is a browser security boundary, not something to work around — hence the
+ * always-visible close button and the click-anywhere backdrop.
  */
 export function LiveOverlay({ onClose }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null)
 
   const channel = import.meta.env.VITE_TWITCH_CHANNEL?.trim() ?? ''
-  // Twitch's embeds are keyed to the hostname serving the page. Reading it at
-  // runtime is what lets one build work across localhost and production.
-  const parent = useMemo(() => window.location.hostname, [])
+
+  // Twitch keys its embeds to the hostname serving the page. Reading it at
+  // runtime is what lets one build work on localhost, preview deploys and
+  // production without hardcoding a domain anywhere.
+  const { playerSrc, chatSrc, channelUrl } = useMemo(() => {
+    if (!channel) return { playerSrc: '', chatSrc: '', channelUrl: '' }
+    const parent = encodeURIComponent(window.location.hostname)
+    const name = encodeURIComponent(channel)
+    return {
+      playerSrc: `https://player.twitch.tv/?channel=${name}&parent=${parent}`,
+      chatSrc: `https://www.twitch.tv/embed/${name}/chat?parent=${parent}&darkpopout`,
+      channelUrl: `https://www.twitch.tv/${name}`,
+    }
+  }, [channel])
 
   useEffect(() => {
     closeRef.current?.focus()
   }, [])
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-label="Live stream">
+    <div className="overlay" role="dialog" aria-modal="true" aria-label="The Live Deck">
       <div className="overlay__backdrop" onClick={onClose} />
       <div className="panel panel--live">
         <header className="panel__header panel__header--live">
-          <PixelText text="LIVE" scale={3} color="#e8564e" shadowColor="#14202b" />
-          <button ref={closeRef} className="button button--icon" type="button" onClick={onClose}>
+          <PixelText text="THE LIVE DECK" scale={3} color="#e0d1b3" shadowColor="#14202b" />
+          <button ref={closeRef} className="button" type="button" onClick={onClose}>
             CLOSE [ESC]
           </button>
         </header>
 
-        <div className="live">
-          <div className="live__player">
-            <div className="placeholder">
-              <span className="placeholder__label">TWITCH PLAYER</span>
-              <span className="placeholder__note">
-                {channel
-                  ? `Ready to embed twitch.tv/${channel}`
-                  : 'Set VITE_TWITCH_CHANNEL in .env.local to point this at a channel.'}
-              </span>
+        {channel ? (
+          <div className="live">
+            <div className="live__player">
+              <iframe
+                title={`${channel} on Twitch`}
+                src={playerSrc}
+                allowFullScreen
+                allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                frameBorder="0"
+                scrolling="no"
+              />
+            </div>
+            <div className="live__chat">
+              <iframe
+                title={`${channel} chat`}
+                src={chatSrc}
+                frameBorder="0"
+                scrolling="no"
+              />
             </div>
           </div>
-
-          <div className="live__chat">
-            <div className="placeholder placeholder--tall">
-              <span className="placeholder__label">CHAT</span>
-              <span className="placeholder__note">Twitch chat embed goes here.</span>
-            </div>
+        ) : (
+          // Misconfiguration should still read as the world, not as an error
+          // page. The operator-facing detail is dev-only.
+          <div className="live__dark">
+            <p>The deck is dark tonight. No feed is running from here.</p>
+            {import.meta.env.DEV && (
+              <p className="live__dark-hint">
+                Set <code>VITE_TWITCH_CHANNEL</code> and rebuild to point the deck at a channel.
+              </p>
+            )}
           </div>
-        </div>
+        )}
 
-        {import.meta.env.DEV && (
-          <p className="live__debug">
-            embed parent: <code>{parent}</code> · channel: <code>{channel || 'unset'}</code>
+        {channel && (
+          <p className="live__footnote">
+            <a href={channelUrl} target="_blank" rel="noopener noreferrer">
+              Open twitch.tv/{channel} in a new tab
+            </a>
           </p>
         )}
       </div>

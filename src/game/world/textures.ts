@@ -8,8 +8,7 @@
  *
  * The generators still obey the art bible (hard pixels, max three shades per
  * material, light from the upper-left, ink outlines) so the world reads
- * correctly while the real art is being made. They are deliberately simple
- * shapes: nobody should mistake these for final assets.
+ * correctly while the real art is being made.
  */
 
 import Phaser from 'phaser'
@@ -174,7 +173,6 @@ function tileGrass(buf: PixelBuffer, tuft: boolean): void {
   for (const [x, y] of LIGHT_SPECKS) buf.set(x, y, C.grassLight)
   for (const [x, y] of DARK_SPECKS) buf.set(x, y, C.grassShadow)
   if (!tuft) return
-  // A three-blade tuft, lit from the upper-left.
   buf.rect(6, 10, 1, 3, C.grassShadow)
   buf.rect(8, 8, 1, 5, C.grassLight)
   buf.rect(10, 10, 1, 3, C.grassShadow)
@@ -194,8 +192,8 @@ function tileDirt(buf: PixelBuffer): void {
  * Trodden flagstones set into earth.
  *
  * Deliberately low relief: a strong light/dark bevel on every stone made a
- * two-tile-wide path read as a brick wall from this top-down angle, so the
- * stones only catch a single lit pixel on their upper-left edge.
+ * wide path read as a brick wall from this top-down angle, so the stones only
+ * catch a single lit pixel on their upper-left edge.
  */
 function tilePath(buf: PixelBuffer): void {
   buf.rect(0, 0, TILE_SIZE, TILE_SIZE, C.dirtMid)
@@ -210,7 +208,6 @@ function tilePath(buf: PixelBuffer): void {
     buf.rect(x, y, w, 1, C.stoneLight)
     buf.rect(x, y, 1, h, C.stoneLight)
   }
-  // A little wear so the surface is not a flat grid.
   buf.set(4, 4, C.stoneShadow)
   buf.set(12, 12, C.stoneShadow)
   buf.set(11, 3, C.stoneLight)
@@ -226,6 +223,38 @@ function tileSlab(buf: PixelBuffer): void {
   buf.set(4, 4, C.stoneMid)
   buf.set(12, 11, C.stoneMid)
   buf.set(11, 3, C.stoneMid)
+}
+
+/**
+ * Darker dressed stone. Used for the gate dais and the short aisle leading to
+ * it, so the plaza reads as two-tone architecture that points at the gate.
+ *
+ * Carries no blue at all, on purpose. An earlier version inlaid cobalt here
+ * and the plaza floor turned into a field of blue dots — in the arrival plaza
+ * the portal and the two banners should be the only blue there is.
+ */
+function tileAccent(buf: PixelBuffer): void {
+  buf.rect(0, 0, TILE_SIZE, TILE_SIZE, C.stoneMid)
+  buf.rect(0, 0, TILE_SIZE, 1, C.stoneShadow)
+  buf.rect(0, 0, 1, TILE_SIZE, C.stoneShadow)
+  buf.rect(0, 7, TILE_SIZE, 1, C.stoneShadow)
+  buf.rect(7, 0, 1, TILE_SIZE, C.stoneShadow)
+  // Lit upper-left corner of each quarter-slab.
+  for (const [x, y] of [[1, 1], [9, 1], [1, 9], [9, 9]]) {
+    buf.rect(x, y, 6, 1, C.stoneLight)
+    buf.rect(x, y, 1, 6, C.stoneLight)
+  }
+  buf.set(4, 12, C.stoneShadow)
+  buf.set(13, 4, C.stoneShadow)
+}
+
+/** Timber decking for the live platform over the water. */
+function tileDeck(buf: PixelBuffer): void {
+  buf.rect(0, 0, TILE_SIZE, TILE_SIZE, C.woodLight)
+  for (const y of [0, 5, 10, 15]) buf.rect(0, y, TILE_SIZE, 1, C.woodDark)
+  for (const y of [1, 6, 11]) buf.rect(0, y, TILE_SIZE, 1, C.stoneLight)
+  buf.rect(7, 0, 1, TILE_SIZE, C.woodDark)
+  for (const [x, y] of [[3, 3], [11, 8], [4, 13]]) buf.set(x, y, C.stoneShadow)
 }
 
 function tileShore(buf: PixelBuffer): void {
@@ -246,14 +275,19 @@ function tileWater(buf: PixelBuffer): void {
 
 function tileCliff(buf: PixelBuffer): void {
   buf.rect(0, 0, TILE_SIZE, TILE_SIZE, C.stoneShadow)
-  buf.rect(0, 0, TILE_SIZE, 2, C.stoneMid) // top face catches the sky
+  buf.rect(0, 0, TILE_SIZE, 2, C.stoneMid)
   buf.rect(0, 0, 2, TILE_SIZE, C.stoneMid)
   buf.rect(0, 0, TILE_SIZE, 1, C.stoneLight)
-  // Blocky masonry, plus a couple of ink cracks.
-  buf.rect(0, 7, TILE_SIZE, 1, C.ink)
-  buf.rect(6, 2, 1, 5, C.ink)
-  buf.rect(11, 8, 1, 8, C.ink)
-  buf.rect(3, 9, 1, 3, C.ink)
+  // Broken cracks rather than a full-width course line: an unbroken horizontal
+  // rule every 16px turned the whole cliff into brickwork and fought the
+  // MRFINNERTYTV lettering sitting on top of it.
+  buf.rect(0, 7, 5, 1, C.ink)
+  buf.rect(9, 7, 7, 1, C.ink)
+  buf.rect(6, 2, 1, 4, C.ink)
+  buf.rect(11, 9, 1, 6, C.ink)
+  buf.rect(3, 10, 1, 3, C.ink)
+  buf.set(13, 4, C.stoneShadow)
+  buf.set(7, 12, C.stoneShadow)
 }
 
 function generateTileset(scene: Phaser.Scene): void {
@@ -266,6 +300,8 @@ function generateTileset(scene: Phaser.Scene): void {
     tileShore,
     tileWater,
     tileCliff,
+    tileAccent,
+    tileDeck,
   ]
   const made = canvasFor(scene, TextureKeys.tileset, TILE_SIZE, TILE_SIZE * builders.length)
   if (!made) return
@@ -292,26 +328,58 @@ function propCanvas(scene: Phaser.Scene, key: string, draw: (buf: PixelBuffer) =
   texture.refresh()
 }
 
+/** One tapered conifer tier: rows widen toward the base. */
+function pineTier(buf: PixelBuffer, top: number, bottom: number, halfWidthAtBase: number): void {
+  const rows = bottom - top
+  for (let i = 0; i <= rows; i++) {
+    const y = top + i
+    const half = Math.round((i / rows) * halfWidthAtBase)
+    for (let x = 32 - half; x <= 32 + half; x++) {
+      // Light from the upper-left: the left flank of each tier catches it.
+      const t = (x - (32 - half)) / Math.max(1, half * 2)
+      buf.set(x, y, t < 0.28 ? C.grassMid : t > 0.72 ? C.grassShadow : C.grassShadow)
+    }
+    // A lit ridge down the left edge keeps the tiers readable against each other.
+    buf.set(32 - half, y, C.grassMid)
+    if (half > 2) buf.set(32 - half + 1, y, C.grassMid)
+  }
+  buf.rect(32 - halfWidthAtBase, bottom, halfWidthAtBase * 2 + 1, 1, C.grassShadow)
+}
+
 function generateProps(scene: Phaser.Scene): void {
+  // Broadleaf: three offset masses rather than one oval, so it never reads as
+  // a lollipop. This is the common tree, so its silhouette matters most.
   propCanvas(scene, TextureKeys.tree, (buf) => {
     buf.rect(29, 38, 6, 18, C.woodDark)
     buf.rect(29, 38, 2, 18, C.woodLight)
-    // Two offset masses rather than one oval: a single ellipse reads as a
-    // lollipop, which is exactly the mobile-game look the brief rules out.
     buf.ellipseShaded(33, 24, 16, 19, C.grassLight, C.grassMid, C.grassShadow)
     buf.ellipseShaded(24, 33, 10, 11, C.grassLight, C.grassMid, C.grassShadow)
     buf.ellipseShaded(41, 34, 8, 9, C.grassLight, C.grassMid, C.grassShadow)
   })
 
-  propCanvas(scene, TextureKeys.treeSmall, (buf) => {
-    buf.rect(31, 48, 3, 8, C.woodDark)
-    buf.rect(31, 48, 1, 8, C.woodLight)
-    buf.ellipseShaded(32, 44, 12, 9, C.grassLight, C.grassMid, C.grassShadow)
+  // Conifer: a tall, hard-edged triangular silhouette. Its whole job is to be
+  // unmistakably NOT the broadleaf at a glance.
+  propCanvas(scene, TextureKeys.pine, (buf) => {
+    buf.rect(30, 46, 4, 10, C.woodDark)
+    buf.rect(30, 46, 1, 10, C.woodLight)
+    pineTier(buf, 6, 22, 9)
+    pineTier(buf, 18, 36, 13)
+    pineTier(buf, 32, 50, 17)
   })
 
-  propCanvas(scene, TextureKeys.rock, (buf) => {
-    buf.ellipseShaded(32, 50, 10, 6, C.stoneLight, C.stoneMid, C.stoneShadow)
-    buf.ellipseShaded(25, 53, 4, 3, C.stoneLight, C.stoneMid, C.stoneShadow)
+  propCanvas(scene, TextureKeys.bush, (buf) => {
+    buf.ellipseShaded(32, 45, 13, 10, C.grassLight, C.grassMid, C.grassShadow)
+    buf.ellipseShaded(24, 49, 7, 6, C.grassLight, C.grassMid, C.grassShadow)
+  })
+
+  propCanvas(scene, TextureKeys.boulder, (buf) => {
+    buf.ellipseShaded(32, 46, 13, 10, C.stoneLight, C.stoneMid, C.stoneShadow)
+    buf.ellipseShaded(43, 52, 6, 4, C.stoneLight, C.stoneMid, C.stoneShadow)
+    buf.rect(26, 44, 6, 1, C.stoneShadow) // a bedding crack
+  })
+
+  propCanvas(scene, TextureKeys.stone, (buf) => {
+    buf.ellipseShaded(32, 52, 7, 4, C.stoneLight, C.stoneMid, C.stoneShadow)
   })
 
   propCanvas(scene, TextureKeys.lantern, (buf) => {
@@ -326,8 +394,89 @@ function generateProps(scene: Phaser.Scene): void {
     buf.rect(25, 9, 14, 1, C.stoneMid)
   })
 
+  // Flight-case style crate: the streamer-kit detail, kept plain so the deck
+  // reads as "gear lives here", not as an industrial yard.
+  propCanvas(scene, TextureKeys.crate, (buf) => {
+    buf.rect(20, 34, 24, 22, C.woodLight)
+    buf.rect(20, 34, 24, 3, C.stoneLight) // lit top edge
+    buf.rect(20, 34, 3, 22, C.stoneLight)
+    buf.rect(41, 34, 3, 22, C.woodDark)
+    buf.rect(20, 53, 24, 3, C.woodDark)
+    // Corner braces and a strap.
+    buf.rect(20, 34, 5, 5, C.woodDark)
+    buf.rect(39, 34, 5, 5, C.woodDark)
+    buf.rect(20, 51, 5, 5, C.woodDark)
+    buf.rect(39, 51, 5, 5, C.woodDark)
+    buf.rect(30, 34, 4, 22, C.woodDark)
+    buf.rect(30, 34, 1, 22, C.stoneLight)
+    // A small cobalt stencil so the kit belongs to this world.
+    buf.rect(25, 43, 4, 4, C.cobalt)
+    buf.set(25, 43, C.lightBlue)
+  })
+
+  // Cobalt standing banner: the "subtle blue signage" that marks the plaza and
+  // the deck as the same operation.
+  propCanvas(scene, TextureKeys.banner, (buf) => {
+    buf.rect(30, 30, 4, 26, C.woodDark) // pole
+    buf.rect(30, 30, 1, 26, C.woodLight)
+    buf.rect(26, 52, 12, 4, C.stoneShadow) // foot
+    buf.rect(26, 52, 12, 1, C.stoneMid)
+    // A narrow hanging pennant, not a road sign. The mark is a plain bar and
+    // stud — a chevron at this size reads as a directional arrow.
+    buf.rect(25, 10, 14, 24, C.cobalt)
+    buf.rect(25, 10, 2, 24, C.lightBlue)
+    buf.rect(37, 10, 2, 24, C.cobaltShadow)
+    buf.rect(25, 10, 14, 2, C.stoneLight) // header bar
+    buf.rect(29, 17, 6, 2, C.stoneLight)
+    buf.rect(31, 21, 2, 2, C.stoneLight)
+    buf.rect(29, 25, 6, 2, C.stoneLight)
+    // Pennant tail.
+    buf.rect(25, 34, 4, 2, C.cobaltShadow)
+    buf.rect(35, 34, 4, 2, C.cobaltShadow)
+  })
+
+  propCanvas(scene, TextureKeys.flowers, (buf) => {
+    const blooms: [number, number, string][] = [
+      [26, 48, C.stoneLight],
+      [32, 45, C.amber],
+      [38, 49, C.paleBlue],
+      [30, 51, C.amber],
+    ]
+    for (const [x, y, color] of blooms) {
+      buf.rect(x, y + 2, 1, 5, C.grassShadow) // stem
+      buf.rect(x - 1, y, 3, 2, color)
+      buf.set(x - 1, y, C.stoneLight)
+    }
+    buf.rect(25, 54, 15, 1, C.grassShadow)
+  })
+
+  propCanvas(scene, TextureKeys.weeds, (buf) => {
+    const blades: [number, number, number][] = [
+      [27, 49, 7],
+      [30, 46, 10],
+      [33, 48, 8],
+      [36, 50, 6],
+    ]
+    for (const [x, y, h] of blades) {
+      buf.rect(x, y, 1, h, C.grassShadow)
+      buf.set(x, y, C.grassLight)
+    }
+    buf.rect(26, 55, 12, 1, C.grassShadow)
+  })
+
+  // A coiled cable run: flat set dressing near the live deck.
+  propCanvas(scene, TextureKeys.cable, (buf) => {
+    buf.ellipse(32, 51, 11, 5, C.ink)
+    buf.ellipse(32, 51, 7, 3, C.stoneShadow)
+    buf.ellipse(32, 50, 4, 2, C.ink)
+    buf.rect(22, 49, 3, 1, C.stoneShadow) // lit top of the coil
+    buf.rect(40, 53, 4, 1, C.ink)
+  })
+
+  // The gate: a heavy stone arch with a calm field inside it. Deliberately
+  // unbusy — it is the first thing a visitor sees, so it should read as
+  // architecture rather than as an effect.
   propCanvas(scene, TextureKeys.portal, (buf) => {
-    // An arch: vertical jambs below the springline, a half-round above it.
     const arch = (halfW: number, top: number, bottom: number) => {
       const spring = top + halfW
       return (x: number, y: number) => {
@@ -338,26 +487,30 @@ function generateProps(scene: Phaser.Scene): void {
         return dx * dx + dy * dy <= halfW * halfW
       }
     }
-    const outer = arch(20, 10, 56)
+    const outer = arch(21, 8, 56)
     const inner = arch(13, 20, 56)
 
     for (let y = 0; y < ASSET_SIZE; y++) {
       for (let x = 0; x < ASSET_SIZE; x++) {
         if (inner(x, y)) {
-          // The gate itself: cobalt, banded so it reads as energy not glass.
-          const band = (y + Math.abs(x - 32)) % 9
-          buf.set(x, y, band < 2 ? C.lightBlue : band < 6 ? C.cobalt : C.cobaltShadow)
+          // Three flat bands, brightest down the centre. No chevrons, no
+          // animation: a steady light, not a special effect.
+          const dx = Math.abs(x - 32)
+          buf.set(x, y, dx < 4 ? C.lightBlue : dx < 9 ? C.cobalt : C.cobaltShadow)
         } else if (outer(x, y)) {
           const dx = x - 32
-          buf.set(x, y, dx < -12 ? C.stoneLight : dx > 12 ? C.stoneShadow : C.stoneMid)
+          buf.set(x, y, dx < -13 ? C.stoneLight : dx > 13 ? C.stoneShadow : C.stoneMid)
         }
       }
     }
-    // Keystone + a couple of pale motes so the gate looks awake.
-    buf.rect(29, 10, 6, 4, C.stoneLight)
-    buf.set(26, 34, C.paleBlue)
-    buf.set(38, 27, C.paleBlue)
-    buf.set(33, 45, C.paleBlue)
+    // Masonry courses across the frame so it reads as cut blocks.
+    for (const y of [16, 26, 36, 46]) {
+      for (let x = 8; x < 56; x++) if (outer(x, y) && !inner(x, y)) buf.set(x, y, C.stoneShadow)
+    }
+    buf.rect(28, 8, 8, 5, C.stoneLight) // keystone
+    buf.rect(28, 8, 8, 1, C.stoneMid)
+    // A few pale motes so the field looks awake without moving.
+    for (const [x, y] of [[27, 34], [37, 27], [32, 45], [29, 50]]) buf.set(x, y, C.paleBlue)
   })
 
   propCanvas(scene, TextureKeys.sign, (buf) => {
@@ -407,49 +560,57 @@ export const PLAYER_ROWS = 4
 type Facing = 'down' | 'left' | 'right' | 'up'
 const FACINGS: Facing[] = ['down', 'left', 'right', 'up']
 
+/**
+ * Adult proportions on purpose: the head is roughly a quarter of the figure,
+ * not a third. Chibi head-to-body ratios were the single biggest thing making
+ * the old placeholder read as a mobile game.
+ */
 function drawPlayerFrame(buf: PixelBuffer, facing: Facing, step: number): void {
-  // step: 0 and 2 idle, 1 left foot forward, 3 right foot forward.
   const moving = step === 1 || step === 3
   const bob = moving ? -1 : 0
   const side = facing === 'left' ? -1 : facing === 'right' ? 1 : 0
+  const narrow = side !== 0 ? 2 : 0 // profiles are slimmer than front/back
 
-  // Legs first so the tunic overlaps them.
-  const legY = 51
-  const front = step === 1 ? -1 : step === 3 ? 1 : 0
-  buf.rect(27, legY + (front < 0 ? -1 : 0), 4, 5, C.ink)
-  buf.rect(33, legY + (front > 0 ? -1 : 0), 4, 5, C.ink)
-  buf.rect(27, 55, 4, 1, C.stoneShadow)
-  buf.rect(33, 55, 4, 1, C.stoneShadow)
+  // --- legs (drawn first so the coat overlaps them) ---
+  const stride = step === 1 ? -1 : step === 3 ? 1 : 0
+  buf.rect(28, 46 + (stride < 0 ? -1 : 0), 4, 10, C.ink)
+  buf.rect(33, 46 + (stride > 0 ? -1 : 0), 4, 10, C.ink)
+  buf.rect(27, 53, 5, 3, C.ink) // boots
+  buf.rect(33, 53, 5, 3, C.ink)
+  buf.rect(27, 53, 5, 1, C.stoneShadow)
+  buf.rect(33, 53, 5, 1, C.stoneShadow)
 
-  // Torso — the cobalt hoodie is the one piece of brand colour on the player.
-  const ty = 39 + bob
-  buf.rect(25 + side, ty, 14, 13, C.cobalt)
-  buf.rect(25 + side, ty, 4, 13, C.lightBlue) // lit edge, upper-left
-  buf.rect(35 + side, ty, 4, 13, C.cobaltShadow)
-  buf.rect(25 + side, ty + 11, 14, 2, C.cobaltShadow)
+  // --- torso: a long cobalt coat, the one piece of brand colour ---
+  const ty = 34 + bob
+  const tx = 26 + side + narrow / 2
+  const tw = 13 - narrow
+  buf.rect(tx, ty, tw, 13, C.cobalt)
+  buf.rect(tx, ty, 3, 13, C.lightBlue) // lit edge, upper-left
+  buf.rect(tx + tw - 3, ty, 3, 13, C.cobaltShadow)
+  buf.rect(tx, ty + 11, tw, 2, C.cobaltShadow) // hem
+  buf.rect(tx + 1, ty, tw - 2, 2, C.stoneLight) // cream collar
 
-  // Arms.
-  buf.rect(22 + side, ty + 2, 3, 8, C.cobalt)
-  buf.rect(39 + side, ty + 2, 3, 8, C.cobaltShadow)
+  // --- arms ---
+  buf.rect(tx - 3, ty + 3, 3, 9, C.cobalt)
+  buf.rect(tx + tw, ty + 3, 3, 9, C.cobaltShadow)
 
-  // Head.
-  const hy = 27 + bob
-  buf.rect(26 + side, hy, 12, 13, C.stoneLight)
-  buf.rect(26 + side, hy, 4, 13, C.paleBlue)
-  buf.rect(26 + side, hy, 12, 4, C.ink) // hair
-  buf.rect(26 + side, hy, 2, 8, C.ink)
-  buf.rect(36 + side, hy, 2, 8, C.ink)
+  // --- head ---
+  const hy = 25 + bob
+  const hx = 28 + side
+  buf.rect(hx, hy, 9, 10, C.stoneLight) // face
+  buf.rect(hx, hy, 3, 10, C.paleBlue) // lit side
+  buf.rect(hx, hy, 9, 4, C.ink) // hair
+  buf.rect(hx, hy, 2, 7, C.ink)
+  buf.rect(hx + 7, hy, 2, 7, C.ink)
 
   if (facing === 'down') {
-    buf.rect(29, hy + 7, 2, 2, C.ink)
-    buf.rect(34, hy + 7, 2, 2, C.ink)
+    buf.rect(hx + 2, hy + 6, 2, 2, C.ink)
+    buf.rect(hx + 5, hy + 6, 2, 2, C.ink)
   } else if (facing === 'up') {
-    buf.rect(26, hy, 12, 11, C.ink) // back of the head is all hair
+    buf.rect(hx, hy, 9, 9, C.ink) // back of the head is all hair
   } else {
-    const eyeX = facing === 'left' ? 28 : 34
-    buf.rect(eyeX, hy + 7, 2, 2, C.ink)
-    // Push the hair across so the profile reads directionally.
-    buf.rect(facing === 'left' ? 24 : 36, hy, 4, 9, C.ink)
+    buf.rect(facing === 'left' ? hx : hx + 6, hy, 3, 8, C.ink) // hair sweep
+    buf.rect(facing === 'left' ? hx + 3 : hx + 4, hy + 6, 2, 2, C.ink) // one eye
   }
 }
 

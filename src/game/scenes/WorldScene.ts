@@ -20,32 +20,61 @@ import {
 
 const hex = (color: number) => `#${color.toString(16).padStart(6, '0')}`
 
-/** Collider footprint per prop, in world pixels, measured up from the baseline. */
-const PROP_COLLIDERS: Record<PropKind | InteractableKind, { width: number; height: number }> = {
+/**
+ * Collider footprint per prop, in world pixels, measured up from the baseline.
+ *
+ * `null` means the player walks straight through it. This table is the single
+ * authority on what is solid — decor is defined by having no collider here
+ * rather than by a second list that could drift out of sync.
+ */
+const PROP_COLLIDERS: Record<PropKind | InteractableKind, { width: number; height: number } | null> = {
   tree: { width: 14, height: 8 },
-  treeSmall: { width: 12, height: 6 },
-  rock: { width: 14, height: 6 },
+  pine: { width: 12, height: 8 },
+  bush: { width: 12, height: 6 },
+  boulder: { width: 18, height: 8 },
+  stone: { width: 10, height: 5 },
   lantern: { width: 6, height: 5 },
-  portal: { width: 30, height: 10 },
+  crate: { width: 22, height: 10 },
+  banner: { width: 8, height: 5 },
+  flowers: null,
+  weeds: null,
+  cable: null,
+  portal: { width: 34, height: 10 },
   sign: { width: 22, height: 6 },
   live: { width: 26, height: 6 },
 }
 
+/** Props that lie flat on the ground, so the player walks over them. */
+const FLAT_PROPS: ReadonlySet<PropKind> = new Set<PropKind>(['cable'])
+
 const PROP_TEXTURES: Record<PropKind, string> = {
   tree: TextureKeys.tree,
-  treeSmall: TextureKeys.treeSmall,
-  rock: TextureKeys.rock,
+  pine: TextureKeys.pine,
+  bush: TextureKeys.bush,
+  boulder: TextureKeys.boulder,
+  stone: TextureKeys.stone,
   lantern: TextureKeys.lantern,
+  crate: TextureKeys.crate,
+  banner: TextureKeys.banner,
+  flowers: TextureKeys.flowers,
+  weeds: TextureKeys.weeds,
+  cable: TextureKeys.cable,
 }
 
 const INTERACTABLE_TEXTURES: Record<InteractableKind, string> = {
   portal: TextureKeys.portal,
   sign: TextureKeys.sign,
   live: TextureKeys.liveSign,
+  crate: TextureKeys.crate,
 }
 
 /** How far above an interactable's baseline the [E] prompt floats. */
-const PROMPT_OFFSET: Record<InteractableKind, number> = { portal: 52, sign: 44, live: 46 }
+const PROMPT_OFFSET: Record<InteractableKind, number> = {
+  portal: 54,
+  sign: 44,
+  live: 46,
+  crate: 30,
+}
 
 type Mode = 'title' | 'play'
 
@@ -107,13 +136,21 @@ export class WorldScene extends Phaser.Scene {
     this.solids = this.physics.add.staticGroup()
     for (const prop of world.props) {
       const { x, y } = tileToWorld(prop.tileX, prop.tileY)
-      this.addProp(PROP_TEXTURES[prop.kind], x, y, PROP_COLLIDERS[prop.kind])
+      this.addProp(PROP_TEXTURES[prop.kind], x, y, PROP_COLLIDERS[prop.kind], FLAT_PROPS.has(prop.kind))
       if (prop.kind === 'lantern') {
         this.timeOfDay.addLight(x, y - 38, {
           radius: 44,
           color: PALETTE.lanternAmber,
           nightAlpha: 0.5,
           flicker: 0.05,
+        })
+      } else if (prop.kind === 'banner') {
+        // Signage stays faintly lit after dark, the way real signage does.
+        this.timeOfDay.addLight(x, y - 34, {
+          radius: 26,
+          color: PALETTE.cobalt,
+          dayAlpha: 0.05,
+          nightAlpha: 0.26,
         })
       }
     }
@@ -148,16 +185,19 @@ export class WorldScene extends Phaser.Scene {
       .setDepth(Depths.decal)
   }
 
-  /** Adds a sprite plus an invisible collider box at its feet. */
+  /** Adds a sprite plus, unless it is decor, an invisible collider at its feet. */
   private addProp(
     texture: string,
     x: number,
     y: number,
     collider: { width: number; height: number } | null,
+    flat = false,
   ): Phaser.GameObjects.Image {
     const image = this.add.image(x, y, texture)
     image.setOrigin(0.5, 56 / 64)
-    image.setDepth(Depths.entities + y)
+    // Flat props sit under everything so the player walks over them; everything
+    // else sorts against the player by its baseline.
+    image.setDepth(flat ? Depths.decal : Depths.entities + y)
 
     if (collider) {
       // Collision lives on its own rectangle rather than the sprite body, so

@@ -53,19 +53,24 @@ npm run preview
 - **Title state** — a live, slowly drifting view of the world rather than a web
   hero section. The giant `MRFINNERTYTV` lettering is world geometry on the
   cliff to the north, not UI text: you can walk up to it.
-- **One playable map** — 60 × 40 tiles (960 × 640 px), about four screens.
-  A stone lobby plaza, a path east then south, a waterfront live deck, a lake,
-  and a treeline/cliff boundary.
+- **A designed arrival** — 60 × 40 tiles (960 × 640 px), about four screens.
+  You arrive at a symmetrical plaza built around the gate, on a darker stone
+  dais between two cobalt banners. A three-tile avenue leaves east and narrows
+  into a trail that turns south to a timber live deck over the lake.
 - **Movement** — four directions, normalised diagonals, Arcade Physics
   collision against water, cliffs, trees, lanterns and props.
 - **Camera** — smooth follow, clamped to world bounds.
-- **Interactions** — a reusable proximity system driven by data. Four landmarks
-  on it: the portal, two signs, and the Live board.
+- **Interactions** — a reusable proximity system driven by data. Five landmarks
+  on it: the gate, two signs, the kit crate, and the Live board.
 - **Day/night** — a ~5 minute cycle. Daylight is genuinely untouched; night is
-  moonlit blue with warm lantern pools and a restrained cobalt portal glow.
-- **Overlays** — dialogs and the future Twitch player are normal DOM layers
-  above the canvas. Player input is disabled while one is open, and focus
-  returns to the canvas when it closes.
+  moonlit blue with warm lantern pools and a restrained cobalt glow from the
+  gate and the banners.
+- **The Live Deck** — the Twitch player and chat, embedded for real. Whether
+  the channel is live is reported by Twitch's own embed; nothing here fakes
+  status or viewer counts.
+- **Overlays** — dialogs and the Twitch player are normal DOM layers above the
+  canvas. Player input is disabled while one is open, and focus returns to the
+  canvas when it closes.
 - **Desktop-first** — narrow and touch-only devices get a pixel-art fallback
   screen instead of a cramped game with a virtual joystick.
 
@@ -85,7 +90,7 @@ src/
   components/
     GameShell.tsx             mounts the canvas, owns overlay state
     StartScreen.tsx           title prompt and controls
-    LiveOverlay.tsx           Twitch placeholder (DOM, above the canvas)
+    LiveOverlay.tsx           Twitch player + chat (DOM, above the canvas)
     DialogOverlay.tsx         generic panel for every 'dialog' interactable
     MobileFallback.tsx        narrow/touch screen
     PixelText.tsx             bitmap-font text for the DOM
@@ -103,7 +108,7 @@ src/
       TimeOfDaySystem.ts      cycle, ambient tint, light pools
     world/
       worldLayout.ts          the map, as two editable character grids
-      interactables.ts        every landmark, as data
+      interactables.ts        every landmark and its copy, as data
       textures.ts             procedural placeholder art
     ui/
       pixelFont.ts            5x7 glyphs
@@ -145,6 +150,12 @@ Copy `.env.example` to `.env.local`:
 VITE_TWITCH_CHANNEL=mrfinnertytv
 ```
 
-That is the only setting. The Twitch `parent` parameter is derived from
-`window.location.hostname` at runtime, so one build works on localhost, preview
-deploys and production. No secrets belong in this repo.
+That is the only setting, and it is not a secret — it is a public channel name.
+The Twitch `parent` parameter is derived from `window.location.hostname` at
+runtime, so one build works on localhost, preview deploys and production without
+a hardcoded domain anywhere.
+
+**Deploying:** `VITE_TWITCH_CHANNEL` must also be set in the hosting
+environment. Vite inlines env vars at **build** time, so adding or changing it
+requires a redeploy — it is not read at runtime. Without it the Live Deck opens
+and reports that the deck is dark rather than showing an error.
