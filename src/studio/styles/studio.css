@@ -38,52 +38,78 @@
 
 /* ------------------------------------------------------------- hotspots */
 
-.hotspots {
+/* Object overlays. Each layer is a full-canvas crop from the master art drawn
+   at the stage origin, so it inherits the room's exact transform and cannot
+   drift from it at any viewport size. Pointer input is handled by alpha hit
+   testing in JS, so the images themselves take no events. */
+
+.overlays {
   position: absolute;
   inset: 0;
   width: 1672px;
   height: 941px;
-}
-
-.hotspot {
-  fill: transparent;
-  stroke: transparent;
-  stroke-width: 3;
-  cursor: pointer;
-  transition: stroke 120ms linear, fill 120ms linear;
-}
-
-.hotspot.is-hovered {
-  fill: rgba(46, 110, 234, 0.13);
-  stroke: var(--light-blue);
-  /* Hard offset glow — no blur, to stay in keeping with the pixel art. */
-  filter: drop-shadow(0 0 0 var(--cobalt));
-}
-
-.hotspot:focus-visible {
-  outline: none;
-  stroke: var(--pale-blue);
-}
-
-.hotspot__floor {
-  fill: rgba(255, 196, 91, 0.14);
-  stroke: var(--amber);
-  stroke-width: 2;
   pointer-events: none;
 }
 
-.hotspot-label {
+.overlay__img {
+  position: absolute;
+  inset: 0;
+  width: 1672px;
+  height: 941px;
+  opacity: 1;
+  transition: opacity var(--hover-fade) ease-out;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.overlay__img.is-hidden {
+  opacity: 0;
+}
+
+/* A whisper of lift on the highlight — enough to feel lit, not enough to read
+   as a UI state. No box shadow, no scale, no pulse. */
+.overlay__img--hot {
+  filter: brightness(1.02);
+}
+
+/* Focusable for keyboard, invisible, and deliberately transparent to the mouse
+   so the alpha hit test remains the only thing deciding pointer hits. */
+.overlay__key {
+  position: absolute;
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: transparent;
+  font: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.overlay__key:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--light-blue);
+  outline-offset: 2px;
+}
+
+/* Small, restrained, and out of the artwork's way. */
+.overlay__tip {
   position: absolute;
   transform: translate(-50%, -100%);
-  padding: 6px 12px;
-  background: rgba(13, 22, 30, 0.92);
-  border: 2px solid var(--cobalt);
+  padding: 3px 8px;
+  background: rgba(13, 22, 30, 0.86);
   color: var(--pale-blue);
-  font-size: 17px;
-  letter-spacing: 0.22em;
+  font-size: 13px;
+  letter-spacing: 0.18em;
   white-space: nowrap;
   pointer-events: none;
-  box-shadow: 4px 4px 0 rgba(13, 22, 30, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay__img {
+    transition-duration: 1ms;
+  }
 }
 
 /* ------------------------------------------------------------ character */

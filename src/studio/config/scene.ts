@@ -70,15 +70,36 @@ export const PLAYER_START: Point = { x: 0.520, y: 0.690 }
 
 export type HotspotId = 'pc' | 'atlaz' | 'photography'
 
+/** Object bounds inside the master image's native 1672x941 pixel space. */
+export interface Bounds {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
 export interface Hotspot {
   id: HotspotId
-  /** Shown on hover, in the cobalt pixel label. */
+  /** Shown on hover, in the small pixel tooltip. */
   label: string
   /**
-   * The clickable region, as a polygon in normalised room space. A polygon
-   * rather than a rect so the outline can follow the actual furniture edge.
+   * The two overlay layers for this object.
+   *
+   * Both are full-canvas 1672x941 PNGs cut from the master composition, so they
+   * are drawn at the stage origin at native size and inherit exactly the same
+   * transform as the room itself. That is what makes drift impossible at any
+   * viewport size — there is no separate crop rect to keep in step.
+   *
+   * `highlight` points at the derived *-highlight-alpha.png, which has the pale
+   * yellow halo stripped. Regenerate with `node scripts/build-highlight-alpha.mjs`.
    */
-  shape: Point[]
+  layers: { normal: string; highlight: string }
+  /**
+   * Where the object actually sits, for anchoring the tooltip and the keyboard
+   * focus target. MEASURED from the asset alpha by
+   * `node scripts/inspect-overlays.mjs` — not estimated.
+   */
+  bounds: Bounds
   /** Where the character stops before the hotspot opens. Must be inside WALKABLE_FLOOR. */
   standing: Point
   /** Which way the character faces once it arrives. */
@@ -86,50 +107,48 @@ export interface Hotspot {
 }
 
 /**
- * PROVISIONAL geometry — see the note on WALKABLE_FLOOR. The ids, labels,
- * standing points and facing directions are final; only the polygons need
- * nudging against the real artwork.
+ * Painter order: later entries sit on top and win the hit test where objects
+ * overlap. The camera tripod is listed last because it stands in front of the
+ * balcony, nearest the viewer.
  */
 export const HOTSPOTS: Hotspot[] = [
   {
     id: 'pc',
     label: 'MRFINNERTYTV OS',
-    shape: [
-      { x: 0.086, y: 0.250 },
-      { x: 0.352, y: 0.232 },
-      { x: 0.415, y: 0.330 },
-      { x: 0.400, y: 0.470 },
-      { x: 0.240, y: 0.545 },
-      { x: 0.086, y: 0.500 },
-    ],
+    layers: {
+      normal: '/assets/studio/desk.png',
+      highlight: '/assets/studio/desk-highlight-alpha.png',
+    },
+    bounds: { left: 132, top: 195, width: 561, height: 348 },
     standing: { x: 0.378, y: 0.618 },
     facing: 'left',
   },
   {
-    id: 'photography',
-    label: 'PHOTOGRAPHY',
-    shape: [
-      { x: 0.630, y: 0.215 },
-      { x: 0.722, y: 0.215 },
-      { x: 0.730, y: 0.455 },
-      { x: 0.638, y: 0.455 },
-    ],
-    standing: { x: 0.632, y: 0.500 },
-    facing: 'up',
-  },
-  {
     id: 'atlaz',
     label: 'ATLAZ',
-    shape: [
-      { x: 0.690, y: 0.440 },
-      { x: 0.960, y: 0.455 },
-      { x: 0.960, y: 0.700 },
-      { x: 0.700, y: 0.665 },
-    ],
+    layers: {
+      normal: '/assets/studio/atlaz.png',
+      highlight: '/assets/studio/atlaz-highlight-alpha.png',
+    },
+    bounds: { left: 1163, top: 354, width: 498, height: 351 },
     standing: { x: 0.702, y: 0.612 },
     facing: 'right',
   },
+  {
+    id: 'photography',
+    label: 'PHOTOGRAPHY',
+    layers: {
+      normal: '/assets/studio/camera.png',
+      highlight: '/assets/studio/camera-highlight-alpha.png',
+    },
+    bounds: { left: 1091, top: 211, width: 105, height: 221 },
+    standing: { x: 0.632, y: 0.500 },
+    facing: 'up',
+  },
 ]
+
+/** Crossfade duration for the hover swap, in ms. */
+export const HOVER_FADE_MS = 170
 
 /**
  * External destinations. Kept here so they can be changed without touching a

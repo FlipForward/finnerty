@@ -5,10 +5,6 @@ export function toStage(p: Point): Point {
   return { x: p.x * SCENE_WIDTH, y: p.y * SCENE_HEIGHT }
 }
 
-export function polygonToStagePath(points: Point[]): string {
-  return points.map((p) => `${(p.x * SCENE_WIDTH).toFixed(1)},${(p.y * SCENE_HEIGHT).toFixed(1)}`).join(' ')
-}
-
 /** Standard ray-cast containment. Works for the concave floor outline too. */
 export function pointInPolygon(p: Point, poly: Point[]): boolean {
   let inside = false

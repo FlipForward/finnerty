@@ -34,11 +34,34 @@ holds the asset paths, the monitor rectangle, the three hotspots with their
 polygons and standing points, the walkable floor, the ambient layers and the
 tuning constants. Nothing spatial is hardcoded in a component.
 
-**The monitor rectangle is measured, not guessed.** The OS sits over the green
-key area of `pc-closeup-green.png`. Those bounds were read out of the shipped
-PNG — pixels (271, 71) to (1460, 692), filling 99.88% of that box. Open
-`?calibrate=1` to re-measure if the artwork changes; it also reads out
-normalised coordinates under the cursor for tracing hotspots.
+**Geometry is measured, not guessed.** The OS sits over the green key area of
+`pc-closeup-green.png` — pixels (271, 71) to (1460, 692), filling 99.88% of that
+box, read straight out of the shipped PNG. Object bounds come from the overlay
+alpha the same way.
+
+**Hover follows the real silhouette.** Each hotspot is a pair of full-canvas
+crops from the master art (`desk.png` / `desk-highlight-alpha.png`, and so on)
+drawn at the stage origin, so they inherit the room's exact transform and cannot
+drift from it. Pointer hits are resolved by sampling the overlay's alpha, which
+is why only the actual desk, decks or camera can light up — there are no
+polygons or rectangles anywhere.
+
+### Asset scripts
+
+```bash
+node scripts/inspect-overlays.mjs
+```
+Reports each overlay's alpha coverage and content bounds — the numbers that go
+into `bounds` in the config.
+
+```bash
+node scripts/build-highlight-alpha.mjs
+```
+Regenerates `*-highlight-alpha.png`. The supplied highlights carry a pale-yellow
+halo ~21px proud of the object; this masks each one against its own normal
+crop's silhouette so the halo goes and any warm pixels genuinely belonging to
+the object survive. Sources are never modified. Both scripts use a small
+dependency-free PNG codec in `scripts/png.mjs`.
 
 ```
 src/studio/
