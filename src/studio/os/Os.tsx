@@ -1,121 +1,96 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Minigame } from './Minigame'
-
-type AppId = 'live' | 'clips' | 'play' | 'about'
+import { useEffect, useState } from 'react'
+import { AboutApp, ClipModal, ClipsApp, LiveApp, PlayApp } from './apps'
+import { APPS, APP_FADE_MS, DEFAULT_APP, type AppId, type ClipDef } from './osConfig'
 
 interface Props {
-  /** POWER, or Escape from the desktop. */
+  /** EXIT, or Escape with nothing else open. */
   onPowerOff: () => void
 }
 
-const APPS: { id: AppId; name: string; glyph: string; blurb: string }[] = [
-  { id: 'live', name: 'LIVE', glyph: '▶', blurb: 'Stream + chat' },
-  { id: 'clips', name: 'CLIPS', glyph: '✂', blurb: 'Recent cuts' },
-  { id: 'play', name: 'PLAY', glyph: '✦', blurb: 'Signal Catch' },
-  { id: 'about', name: 'ABOUT', glyph: 'ⓘ', blurb: 'Who / where' },
-]
-
-const BOOT_LINES = [
-  'MRFINNERTYTV OS',
-  'checking capture device .......... ok',
-  'mounting /clips .................. ok',
-  'audio interface .................. ok',
-  'ready',
-]
-
 /**
- * The OS inside the monitor.
+ * MRFINNERTYTV OS.
  *
- * A DOM layer positioned exactly over the artwork's green rectangle, so the
- * bezel, desk strip and dark second monitor in the photograph stay untouched
- * and only the screen itself is live.
+ * A fixed-size desktop that lives inside the monitor's screen rectangle. The
+ * shell owns exactly three things: which app is showing, whether a modal is up,
+ * and the Escape ordering between them. Apps themselves are dumb views.
  */
 export function Os({ onPowerOff }: Props) {
-  const [booted, setBooted] = useState(false)
-  const [bootLine, setBootLine] = useState(0)
-  const [open, setOpen] = useState<AppId | null>(null)
-  const rootRef = useRef<HTMLDivElement>(null)
+  const [app, setApp] = useState<AppId>(DEFAULT_APP)
+  const [modalClip, setModalClip] = useState<ClipDef | null>(null)
 
-  // Boot sequence, then the desktop.
-  useEffect(() => {
-    if (booted) return
-    if (bootLine >= BOOT_LINES.length) {
-      const id = window.setTimeout(() => setBooted(true), 260)
-      return () => window.clearTimeout(id)
-    }
-    const id = window.setTimeout(() => setBootLine((l) => l + 1), bootLine === 0 ? 420 : 190)
-    return () => window.clearTimeout(id)
-  }, [bootLine, booted])
-
-  // Escape closes the open app first, and only then powers down. The window
-  // listener is here rather than in the parent so the ordering is explicit.
+  // Escape closes a modal first, and only exits the OS once nothing is stacked
+  // on top of the desktop. Capture phase so it beats anything inside an app.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
       e.preventDefault()
       e.stopPropagation()
-      if (open) setOpen(null)
+      if (modalClip) setModalClip(null)
       else onPowerOff()
     }
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
-  }, [open, onPowerOff])
+  }, [modalClip, onPowerOff])
 
-  const closeApp = useCallback(() => setOpen(null), [])
-
-  if (!booted) {
-    return (
-      <div className="os os--boot" ref={rootRef}>
-        <div className="os__bootlines">
-          {BOOT_LINES.slice(0, bootLine).map((line, i) => (
-            <p key={line} className={i === 0 ? 'os__bootlead' : undefined}>
-              {line}
-            </p>
-          ))}
-          <span className="os__caret" />
-        </div>
-      </div>
-    )
-  }
+  const active = APPS.find((a) => a.id === app) ?? APPS[0]
 
   return (
-    <div className="os" ref={rootRef}>
-      <header className="os__bar">
-        <span className="os__brand">MRFINNERTYTV OS</span>
-        <span className="os__spacer" />
-        <Clock />
-        <button className="os__power" type="button" onClick={onPowerOff} title="Power off">
-          ⏻
-        </button>
-      </header>
-
-      <div className="os__desktop">
-        {APPS.map((app) => (
-          <button key={app.id} className="os__icon" type="button" onClick={() => setOpen(app.id)}>
-            <span className="os__glyph">{app.glyph}</span>
-            <span className="os__name">{app.name}</span>
-            <span className="os__blurb">{app.blurb}</span>
-          </button>
-        ))}
+    <div className="os" style={{ ['--app-fade' as string]: `${APP_FADE_MS}ms` }}>
+      {/* Oversized, cropped, and well behind everything. Pure texture.
+          Wrapped in its own clipping layer so an intentionally out-of-bounds
+          decoration can never contribute to the desktop's scroll box. */}
+      <div className="os__bg" aria-hidden>
+        <div className="os__wordmark">MRFINNERTYTV</div>
       </div>
 
-      {open && (
-        <div className="os__window">
-          <header className="os__winbar">
-            <span>{APPS.find((a) => a.id === open)?.name}</span>
-            <button className="os__close" type="button" onClick={closeApp}>
-              CLOSE [ESC]
-            </button>
-          </header>
-          <div className="os__winbody">
-            {open === 'live' && <LiveApp />}
-            {open === 'clips' && <ClipsApp />}
-            {open === 'play' && <Minigame />}
-            {open === 'about' && <AboutApp />}
-          </div>
-        </div>
-      )}
+      <TopBar onExit={onPowerOff} />
+
+      <div className="os__body">
+        <Dock active={app} onSelect={setApp} />
+
+        <main className="os__main">
+          <section className="win" key={app}>
+            <header className="win__strip">
+              <span className="win__dot" aria-hidden />
+              <span className="win__name">{active.name}</span>
+              <span className="win__path">mrfinnertytv://{active.id}</span>
+            </header>
+
+            <div className="win__body">
+              <h1 className="win__heading">{active.heading}</h1>
+              <div className="win__content">
+                {app === 'live' && <LiveApp />}
+                {app === 'clips' && <ClipsApp onSelect={setModalClip} />}
+                {app === 'play' && <PlayApp />}
+                {app === 'about' && <AboutApp />}
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      {modalClip && <ClipModal clip={modalClip} onClose={() => setModalClip(null)} />}
     </div>
+  )
+}
+
+function TopBar({ onExit }: { onExit: () => void }) {
+  return (
+    <header className="os__bar">
+      <span className="os__mark" aria-hidden>
+        MF
+      </span>
+      <span className="os__brand">MRFINNERTYTV OS</span>
+      <span className="os__spacer" />
+      <span className="os__status">
+        <span className="os__led" aria-hidden />
+        ONLINE
+      </span>
+      <Clock />
+      <button className="os__exit" type="button" onClick={onExit}>
+        EXIT
+      </button>
+    </header>
   )
 }
 
@@ -132,103 +107,66 @@ function Clock() {
   )
 }
 
-/**
- * Twitch's official player and chat.
- *
- * Channel from VITE_TWITCH_CHANNEL, `parent` from the live hostname so one
- * build works on localhost, previews and production. No credentials, no Helix
- * calls, no invented live status — the embed reports that itself.
- */
-function LiveApp() {
-  const channel = import.meta.env.VITE_TWITCH_CHANNEL?.trim() ?? ''
-  const { playerSrc, chatSrc, channelUrl } = useMemo(() => {
-    if (!channel) return { playerSrc: '', chatSrc: '', channelUrl: '' }
-    const parent = encodeURIComponent(window.location.hostname)
-    const name = encodeURIComponent(channel)
-    return {
-      playerSrc: `https://player.twitch.tv/?channel=${name}&parent=${parent}`,
-      chatSrc: `https://www.twitch.tv/embed/${name}/chat?parent=${parent}&darkpopout`,
-      channelUrl: `https://www.twitch.tv/${name}`,
-    }
-  }, [channel])
-
-  if (!channel) {
-    return (
-      <div className="os__empty">
-        <p>No feed is routed to this machine.</p>
-        {import.meta.env.DEV && (
-          <p className="os__hint">
-            Set <code>VITE_TWITCH_CHANNEL</code> and rebuild.
-          </p>
-        )}
-      </div>
-    )
-  }
-
-  return (
-    <div className="os-live">
-      <div className="os-live__player">
-        <iframe
-          title={`${channel} on Twitch`}
-          src={playerSrc}
-          allowFullScreen
-          allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-        />
-      </div>
-      <div className="os-live__chat">
-        <iframe title={`${channel} chat`} src={chatSrc} />
-      </div>
-      <p className="os-live__foot">
-        <a href={channelUrl} target="_blank" rel="noopener noreferrer">
-          Open twitch.tv/{channel} ↗
-        </a>
-      </p>
-    </div>
-  )
+/** Pixel glyphs as rects on a 12x12 grid — no icon font, no SVG curves. */
+const GLYPHS: Record<AppId, [number, number, number, number][]> = {
+  // broadcast: centre dot with a bracket either side
+  live: [
+    [5, 5, 2, 2],
+    [2, 3, 1, 6],
+    [3, 2, 1, 1],
+    [3, 9, 1, 1],
+    [9, 3, 1, 6],
+    [8, 2, 1, 1],
+    [8, 9, 1, 1],
+  ],
+  // film strip: body with sprocket holes
+  clips: [
+    [1, 2, 10, 8],
+    [2, 3, 1, 1],
+    [2, 5, 1, 1],
+    [2, 7, 1, 1],
+    [9, 3, 1, 1],
+    [9, 5, 1, 1],
+    [9, 7, 1, 1],
+    [4, 4, 4, 4],
+  ],
+  // d-pad
+  play: [
+    [4, 1, 4, 10],
+    [1, 4, 10, 4],
+  ],
+  // head and shoulders
+  about: [
+    [4, 2, 4, 4],
+    [2, 7, 8, 4],
+  ],
 }
 
-/** TODO(content): swap for real clip embeds/thumbnails. */
-const CLIPS = [
-  { id: 1, title: 'CLIP SLOT 01', meta: 'Recent' },
-  { id: 2, title: 'CLIP SLOT 02', meta: 'Recent' },
-  { id: 3, title: 'CLIP SLOT 03', meta: 'Recent' },
-]
-
-function ClipsApp() {
+function Glyph({ id }: { id: AppId }) {
   return (
-    <div className="os-clips">
-      {CLIPS.map((clip) => (
-        <article key={clip.id} className="os-clip">
-          <div className="os-clip__thumb" />
-          <h4>{clip.title}</h4>
-          <p>{clip.meta}</p>
-        </article>
+    <svg className="dock__glyph" viewBox="0 0 12 12" shapeRendering="crispEdges" aria-hidden>
+      {GLYPHS[id].map(([x, y, w, h], i) => (
+        <rect key={i} x={x} y={y} width={w} height={h} />
       ))}
-    </div>
+    </svg>
   )
 }
 
-/** TODO(content): real bio and final social list. */
-function AboutApp() {
+function Dock({ active, onSelect }: { active: AppId; onSelect: (id: AppId) => void }) {
   return (
-    <div className="os-about">
-      <h4>MRFINNERTYTV</h4>
-      <p>
-        Streamer and creator from Flanders. Variety streams, clips and the occasional late-night
-        production session in the corner of this room.
-      </p>
-      <ul>
-        <li>
-          <a href="https://www.twitch.tv/mrfinnertytv" target="_blank" rel="noopener noreferrer">
-            Twitch ↗
-          </a>
-        </li>
-        <li>
-          <a href="https://atlazmusic.be" target="_blank" rel="noopener noreferrer">
-            ATLAZ — music ↗
-          </a>
-        </li>
-      </ul>
-    </div>
+    <nav className="dock" aria-label="Applications">
+      {APPS.map((a) => (
+        <button
+          key={a.id}
+          className={`dock__item${active === a.id ? ' is-active' : ''}`}
+          type="button"
+          onClick={() => onSelect(a.id)}
+          aria-current={active === a.id}
+        >
+          <Glyph id={a.glyph} />
+          <span className="dock__label">{a.name}</span>
+        </button>
+      ))}
+    </nav>
   )
 }

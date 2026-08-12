@@ -222,3 +222,84 @@
   overflow: hidden;
   background: #0d161e;
 }
+
+/* ------------------------------------------------- room-level UI
+   Panels (ATLAZ / Photography) and the mobile fallback. These belong to the
+   room, not to the OS, so they live here and os.css stays self-contained. */
+
+.os-button {
+  appearance: none;
+  display: inline-block;
+  border: 2px solid var(--stone-shadow);
+  background: transparent;
+  color: var(--stone-light);
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  padding: 10px 16px;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.os-button:hover { border-color: var(--light-blue); color: var(--pale-blue); }
+.os-button:focus-visible { outline: 2px solid var(--light-blue); outline-offset: 2px; }
+.os-button:disabled { opacity: 0.45; cursor: default; }
+.os-button--primary { border-color: var(--cobalt); color: var(--pale-blue); }
+.os-button--primary:hover { background: var(--cobalt); color: #fff; }
+
+.panel-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 30;
+  padding: 32px;
+}
+
+.panel-overlay__backdrop { position: absolute; inset: 0; background: rgba(8, 13, 18, 0.8); }
+
+.panel-card {
+  position: relative;
+  width: min(620px, 100%);
+  background: var(--ink);
+  border: 2px solid var(--cobalt);
+  box-shadow: 10px 10px 0 rgba(8, 13, 18, 0.6);
+  padding: 24px 26px 26px;
+}
+
+.panel-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.panel-card__head h2 { margin: 0; font-size: 22px; letter-spacing: 0.3em; color: var(--light-blue); }
+.panel-card__lead { margin: 0 0 14px; letter-spacing: 0.22em; color: var(--stone-light); font-size: 14px; }
+.panel-card__body p { margin: 0 0 16px; color: var(--stone-mid); line-height: 1.75; font-size: 14px; }
+
+.mobile { min-height: 100%; display: flex; flex-direction: column; background: var(--ink-deep); }
+.mobile__preview { position: relative; overflow: hidden; }
+.mobile__preview img { display: block; width: 100%; height: auto; }
+.mobile__fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(13, 22, 30, 0.15), var(--ink-deep) 96%);
+}
+.mobile__wordmark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  margin: 0;
+  text-align: center;
+  font-size: clamp(20px, 7vw, 34px);
+  letter-spacing: 0.16em;
+  color: var(--stone-light);
+  text-shadow: 2px 2px 0 var(--ink);
+}
+.mobile__actions { display: grid; gap: 12px; padding: 22px; justify-items: stretch; text-align: center; }
+.mobile__note { margin: 0 0 6px; color: var(--stone-mid); font-size: 13px; line-height: 1.7; }
+.mobile__actions .os-button { padding: 14px; }

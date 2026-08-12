@@ -34,6 +34,18 @@ export function App() {
 
   const close = useCallback(() => setView({ kind: 'studio' }), [])
 
+  // Dev-only handle. The normal route into a view is hovering a hotspot and
+  // waiting for the character to walk there, which needs requestAnimationFrame —
+  // unavailable in a headless/background tab, so smoke checks need a way in.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    const w = window as unknown as Record<string, unknown>
+    w.__APP__ = { open, close, view: () => view }
+    return () => {
+      delete w.__APP__
+    }
+  }, [open, close, view])
+
   if (!desktop) return <MobileStudio />
 
   return (
