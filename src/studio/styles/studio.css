@@ -1,0 +1,198 @@
+/* The studio experience. Layout is in native artwork pixels (1672x941) inside
+   .stage__inner, which is then scaled to the viewport — so nothing here needs
+   media queries for size, only for the mobile fallback. */
+
+.stage,
+.closeup {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--ink-deep);
+}
+
+.stage__inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1672px;
+  height: 941px;
+  transform-origin: 0 0;
+}
+
+/* Nearest-neighbour only while enlarging. Downscaling with `pixelated` drops
+   rows and makes detailed artwork shimmer, so smooth wins below 1x. */
+.stage__inner--pixelated .stage__room,
+.stage__inner--pixelated .character__sprite,
+.stage__inner--pixelated .ambient {
+  image-rendering: pixelated;
+}
+
+.stage__room {
+  position: absolute;
+  inset: 0;
+  width: 1672px;
+  height: 941px;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ------------------------------------------------------------- hotspots */
+
+.hotspots {
+  position: absolute;
+  inset: 0;
+  width: 1672px;
+  height: 941px;
+}
+
+.hotspot {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 3;
+  cursor: pointer;
+  transition: stroke 120ms linear, fill 120ms linear;
+}
+
+.hotspot.is-hovered {
+  fill: rgba(46, 110, 234, 0.13);
+  stroke: var(--light-blue);
+  /* Hard offset glow — no blur, to stay in keeping with the pixel art. */
+  filter: drop-shadow(0 0 0 var(--cobalt));
+}
+
+.hotspot:focus-visible {
+  outline: none;
+  stroke: var(--pale-blue);
+}
+
+.hotspot__floor {
+  fill: rgba(255, 196, 91, 0.14);
+  stroke: var(--amber);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.hotspot-label {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: 6px 12px;
+  background: rgba(13, 22, 30, 0.92);
+  border: 2px solid var(--cobalt);
+  color: var(--pale-blue);
+  font-size: 17px;
+  letter-spacing: 0.22em;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 4px 4px 0 rgba(13, 22, 30, 0.6);
+}
+
+/* ------------------------------------------------------------ character */
+
+.character {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.character__sprite {
+  position: absolute;
+  /* 64px frame, feet on the baseline at y=56 of that frame. */
+  left: -32px;
+  top: -56px;
+  width: 64px;
+  height: 64px;
+  background-repeat: no-repeat;
+}
+
+.character__shadow {
+  position: absolute;
+  left: -12px;
+  top: -6px;
+  width: 24px;
+  height: 10px;
+}
+
+/* -------------------------------------------------------------- ambient */
+
+.ambient {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.ambient--led {
+  background: radial-gradient(ellipse at 50% 50%, rgba(104, 168, 255, 0.55), transparent 70%);
+  opacity: 0.35;
+}
+
+.ambient--led.is-live {
+  animation: led-pulse 3.4s ease-in-out infinite;
+}
+
+@keyframes led-pulse {
+  0%, 100% { opacity: 0.22; }
+  50% { opacity: 0.6; }
+}
+
+.ambient--dust span {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: rgba(255, 240, 210, 0.75);
+  animation-name: dust-drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes dust-drift {
+  0% { transform: translate(0, 0); opacity: 0; }
+  15% { opacity: 0.8; }
+  85% { opacity: 0.5; }
+  100% { transform: translate(26px, 74px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient--led.is-live,
+  .ambient--dust span {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------- calibration */
+
+.calibrate {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  background: rgba(13, 22, 30, 0.9);
+  border: 2px solid var(--amber);
+  color: var(--stone-light);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* ------------------------------------------------------- pc close-up */
+
+.closeup {
+  opacity: 0;
+  transform: scale(1.06);
+  transition: opacity var(--zoom-ms) ease-out, transform var(--zoom-ms) ease-out;
+  z-index: 20;
+}
+
+.closeup.is-in {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.closeup__screen {
+  position: absolute;
+  overflow: hidden;
+  background: #0d161e;
+}

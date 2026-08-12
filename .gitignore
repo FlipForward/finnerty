@@ -28,3 +28,8 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Local tooling / scratch, not part of the project
+.pnpm-store/
+chrome-headless-profile/
+tmp/

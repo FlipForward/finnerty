@@ -1,163 +1,74 @@
-# MRFINNERTYTV — World
+# MRFINNERTYTV — Studio
 
-A playable pixel-art portfolio site for the Flemish streamer MrFinnertyTV. The
-website *is* a small 2D world: you arrive at a lobby, press Enter, and walk
-around with the keyboard.
+The site is a fixed interactive pixel-art studio. The room fills the screen,
+a character walks its floor, and clicking the streaming desk zooms into a
+working pixel-art OS.
 
-This repository is the **V1 foundation** — one real, walkable slice of world
-with clean seams for everything that comes next. See
-[`docs/V1_SCOPE.md`](docs/V1_SCOPE.md) for exactly what is and is not built.
-
-## Requirements
-
-Node 20.19+ or 22.12+ (Vite 7). Built and verified on Node 24.
+See [`docs/V1_SCOPE.md`](docs/V1_SCOPE.md) for what is real and what is still
+placeholder.
 
 ## Commands
-
-Install:
 
 ```bash
 npm install
 ```
-
-Run the dev server at http://localhost:5173:
-
 ```bash
 npm run dev
 ```
-
-Type-check and build for production into `dist/`:
-
 ```bash
 npm run build
 ```
-
-Serve the production build locally:
-
 ```bash
 npm run preview
 ```
 
-## Controls
+## How it works
 
-| Key                | Action                          |
-| ------------------ | ------------------------------- |
-| `Enter` or click   | Start from the title screen     |
-| `WASD` / arrows    | Move                            |
-| `E`                | Interact (when a prompt appears) |
-| `Escape`           | Close an overlay                 |
-| `N`                | Toggle day/night — **dev only** |
+**One coordinate space.** Everything lays out in the artwork's native
+1672 × 941 pixels inside `.stage__inner`, which is then scaled to the viewport
+with `cover`. One set of numbers is therefore correct at every resolution — no
+per-breakpoint geometry.
 
-## What V1 does
+**One config file.** [`src/studio/config/scene.ts`](src/studio/config/scene.ts)
+holds the asset paths, the monitor rectangle, the three hotspots with their
+polygons and standing points, the walkable floor, the ambient layers and the
+tuning constants. Nothing spatial is hardcoded in a component.
 
-- **Arrival Island lobby** — a live, slowly drifting view into a real hub rather
-  than a web hero or a menu floating above a map. The giant `MRFINNERTYTV`
-  lettering is carved into the northern cliff as world geometry, not UI text.
-- **A designed arrival** — 60 × 40 tiles (960 × 640 px), about four screens.
-  You arrive on a curved path below a cosy streamer lodge, with water around
-  the island, a stream and timber bridge to the Forest Trail, a ridge route for
-  the future, and a lakeside Live Deck.
-- **Movement** — four directions, normalised diagonals, Arcade Physics
-  collision against water, cliffs, trees, lanterns and props.
-- **Camera** — smooth follow, clamped to world bounds.
-- **Interactions** — a reusable proximity system driven by data. Five landmarks
-  on it: the gate, two signs, the kit crate, and the Live board.
-- **Day/night** — a ~5 minute cycle. Daylight is genuinely untouched; night is
-  moonlit blue with warm lantern pools and a restrained cobalt glow from the
-  gate and the banners.
-- **The Live Deck** — the Twitch player and chat, embedded for real. Whether
-  the channel is live is reported by Twitch's own embed; nothing here fakes
-  status or viewer counts.
-- **Overlays** — dialogs and the Twitch player are normal DOM layers above the
-  canvas. Player input is disabled while one is open, and focus returns to the
-  canvas when it closes.
-- **Desktop-first** — narrow and touch-only devices get a pixel-art fallback
-  screen instead of a cramped game with a virtual joystick.
-
-Rendering is a fixed **480 × 270** virtual resolution, scaled up by whole
-multiples with nearest-neighbour filtering. At awkward viewport ratios the
-canvas crops by a small amount at its edge rather than exposing a dark frame,
-so the game still fills the browser with square, sharp pixels.
-
-## Architecture
-
-React owns the page and every DOM layer. Phaser owns the canvas, the world and
-the simulation. They never reach into each other — they talk over one typed
-event bus, [`src/game/events.ts`](src/game/events.ts).
+**The monitor rectangle is measured, not guessed.** The OS sits over the green
+key area of `pc-closeup-green.png`. Those bounds were read out of the shipped
+PNG — pixels (271, 71) to (1460, 692), filling 99.88% of that box. Open
+`?calibrate=1` to re-measure if the artwork changes; it also reads out
+normalised coordinates under the cursor for tracing hotspots.
 
 ```
-src/
-  App.tsx                     desktop vs. mobile-fallback decision
-  main.tsx
-  components/
-    GameShell.tsx             mounts the canvas, owns overlay state
-    StartScreen.tsx           title prompt and controls
-    LiveOverlay.tsx           Twitch player + chat (DOM, above the canvas)
-    DialogOverlay.tsx         generic panel for every 'dialog' interactable
-    MobileFallback.tsx        narrow/touch screen
-    PixelText.tsx             bitmap-font text for the DOM
-  game/
-    config.ts                 resolution, grid, palette, tuning, depths
-    events.ts                 the React <-> Phaser seam
-    createGame.ts             Phaser boot + integer scaling + focus
-    scenes/
-      BootScene.ts            texture generation / future asset loading
-      WorldScene.ts           the world, wiring, modes
-    entities/
-      Player.ts               movement, facing, animation
-    systems/
-      InteractionSystem.ts    proximity, [E] prompt, action dispatch
-      TimeOfDaySystem.ts      cycle, ambient tint, light pools
-    world/
-      worldLayout.ts          the map, as two editable character grids
-      interactables.ts        every landmark and its copy, as data
-      textures.ts             procedural placeholder art
-    ui/
-      pixelFont.ts            5x7 glyphs
-      PixelText.ts            bitmap text as Phaser textures
-      pixelTextImage.ts       bitmap text as data URLs, for React
-  styles/
-    app.css                   palette, resets, shared controls
-    game.css                  canvas, title, overlays, fallback
-docs/
-  ART_BIBLE.md                hard art constraints — read before making assets
-  V1_SCOPE.md                 what is deliberately not built
-public/assets/                tiles, props, characters, pets, ui, maps
+src/studio/
+  config/scene.ts        all geometry, links and tuning
+  config/calibrate.ts    key-colour measurement (dev)
+  lib/geometry.ts        cover transform, polygon containment, routing
+  lib/sprites.ts         procedural character + cat placeholders
+  hooks/useStageScale.ts viewport fitting
+  components/            Studio, Character, Ambient, PcCloseup, Panels, MobileStudio
+  os/                    Os shell + Signal Catch mini-game
+  styles/                studio.css, os.css
 ```
 
-### Editing the world
+## Assets
 
-The map is two 60 × 40 character grids in
-[`src/game/world/worldLayout.ts`](src/game/world/worldLayout.ts) — one for
-ground, one for props. Redraw a row, save, reload. Malformed grids throw at boot
-with the offending coordinate rather than failing silently.
-
-Landmarks are data in
-[`src/game/world/interactables.ts`](src/game/world/interactables.ts): give one
-an id, a tile, a label and an action, and the scene builds the sprite, the
-collider and the prompt for it. A new `dialog` landmark needs no new code.
-
-### Art
-
-All textures are generated at runtime and are obviously temporary. Real assets
-drop in via `BootScene.preload()` and automatically take precedence over the
-generators. The contract — 64 × 64 canvases, baseline at `y=56`, sheet layouts,
-palette — is in [`docs/ART_BIBLE.md`](docs/ART_BIBLE.md).
+Both images live in `public/assets/studio/` — see the
+[README there](public/assets/studio/README.md) for the contract. The character
+sprite is generated in code; drop in `studio/player.png` and repoint
+`ASSETS.player` to replace it.
 
 ## Configuration
-
-Copy `.env.example` to `.env.local`:
 
 ```bash
 VITE_TWITCH_CHANNEL=mrfinnertytv
 ```
 
-That is the only setting, and it is not a secret — it is a public channel name.
-The Twitch `parent` parameter is derived from `window.location.hostname` at
-runtime, so one build works on localhost, preview deploys and production without
-a hardcoded domain anywhere.
+Not a secret — a public channel name. The Twitch `parent` parameter is derived
+from `window.location.hostname` at runtime, so one build works on localhost,
+preview deploys and production without a hardcoded domain.
 
-**Deploying:** `VITE_TWITCH_CHANNEL` must also be set in the hosting
-environment. Vite inlines env vars at **build** time, so adding or changing it
-requires a redeploy — it is not read at runtime. Without it the Live Deck opens
-and reports that the deck is dark rather than showing an error.
+**Deploying:** this must also be set in the hosting environment. Vite inlines
+env vars at **build** time, so adding or changing it needs a redeploy. Without
+it, LIVE reports that no feed is routed rather than showing an error.
