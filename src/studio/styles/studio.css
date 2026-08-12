@@ -93,19 +93,6 @@
   outline-offset: 2px;
 }
 
-/* Small, restrained, and out of the artwork's way. */
-.overlay__tip {
-  position: absolute;
-  transform: translate(-50%, -100%);
-  padding: 3px 8px;
-  background: rgba(13, 22, 30, 0.86);
-  color: var(--pale-blue);
-  font-size: 13px;
-  letter-spacing: 0.18em;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .overlay__img {
     transition-duration: 1ms;
@@ -221,6 +208,104 @@
   position: absolute;
   overflow: hidden;
   background: #0d161e;
+}
+
+/* ------------------------------------------------------ loading screen
+   Black, small spinning coin, one line under it. Sits above everything and
+   only lifts once every asset has decoded. */
+
+.loading {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 22px;
+  background: #000;
+  opacity: 1;
+  transition: opacity var(--reveal-fade) ease-out;
+}
+
+.loading.is-done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading__line {
+  margin: 0;
+  min-height: 1em;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  color: #8a7f6b;
+  animation: line-in 260ms ease-out both;
+}
+
+@keyframes line-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.loading__bar {
+  width: 132px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+
+.loading__bar span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #c9a227;
+  transform-origin: 0 50%;
+  transition: transform 220ms ease-out;
+}
+
+/* Visually hidden, still announced. */
+.loading__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---- the coin ---- */
+
+.coin {
+  position: relative;
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+}
+
+.coin__spin {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.coin__spin img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: visible;
+}
+
+.coin__flash {
+  filter: brightness(0) invert(1) sepia(0.5) saturate(2.5)
+    drop-shadow(0 0 18px rgba(255, 214, 130, 0.9));
+  backface-visibility: hidden;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading__line { animation: none; }
 }
 
 /* ------------------------------------------------- room-level UI

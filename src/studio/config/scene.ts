@@ -16,6 +16,8 @@ export const ASSETS = {
   room: '/assets/studio/studio-master.png',
   pcCloseup: '/assets/studio/pc-closeup-green.png',
   player: '/assets/studio/player.png',
+  /** Logo silhouette extruded into the spinning coin on the loading screen. */
+  sunCoin: '/assets/studio/sun-coin.png',
 } as const
 
 /**

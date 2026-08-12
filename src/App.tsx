@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
+import { PRELOAD_SOURCES, REVEAL_HOLD_MS } from './studio/config/loading'
+import { usePreload } from './studio/hooks/usePreload'
+import { LoadingScreen } from './studio/components/LoadingScreen'
 import { MobileStudio } from './studio/components/MobileStudio'
 import { PcCloseup } from './studio/components/PcCloseup'
 import { AtlazPanel, PhotographyPanel } from './studio/components/Panels'
@@ -20,6 +23,25 @@ type View = { kind: 'studio' } | { kind: 'pc' } | { kind: 'panel'; id: 'atlaz' |
 export function App() {
   const [desktop, setDesktop] = useState(isDesktop)
   const [view, setView] = useState<View>({ kind: 'studio' })
+
+  // Nothing is interactive until every asset has decoded. `revealed` trails
+  // `preload.done` by the hold + fade so the screen reads as finishing rather
+  // than blinking out, and the room is not clickable through it.
+  const preload = usePreload(PRELOAD_SOURCES)
+  const [revealed, setRevealed] = useState(false)
+
+  useEffect(() => {
+    if (!preload.done || revealed) return
+    const id = window.setTimeout(() => setRevealed(true), REVEAL_HOLD_MS)
+    return () => window.clearTimeout(id)
+  }, [preload.done, revealed])
+
+  // `?loading=1` pins the loading screen open in dev. On a warm cache it is
+  // gone in under a frame, which makes it impossible to look at otherwise.
+  // Same convention as `?calibrate=1` on the room.
+  const pinLoading =
+    import.meta.env.DEV && new URLSearchParams(window.location.search).has('loading')
+  const showLoading = pinLoading || !revealed
 
   useEffect(() => {
     const onResize = () => setDesktop(isDesktop())
@@ -50,10 +72,15 @@ export function App() {
 
   return (
     <>
-      <Studio onOpen={open} interactive={view.kind === 'studio'} />
+      {/* The room mounts underneath immediately so it is fully painted by the
+          time the loading screen lifts. */}
+      <Studio onOpen={open} interactive={!showLoading && view.kind === 'studio'} />
       {view.kind === 'pc' && <PcCloseup onExit={close} />}
       {view.kind === 'panel' && view.id === 'atlaz' && <AtlazPanel onClose={close} />}
       {view.kind === 'panel' && view.id === 'photography' && <PhotographyPanel onClose={close} />}
+      {showLoading && (
+        <LoadingScreen progress={pinLoading ? 0.42 : preload.progress} complete={!pinLoading && preload.done} />
+      )}
     </>
   )
 }

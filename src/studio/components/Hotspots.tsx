@@ -175,18 +175,8 @@ export function Hotspots({ hovered, onHover, onActivate, interactive }: Props) {
         </button>
       ))}
 
-      {hovered && <Tooltip spot={HOTSPOTS.find((s) => s.id === hovered)!} />}
+      {/* No hover label by design: the object lighting up is the affordance.
+          `label` is still the accessible name on each keyboard button. */}
     </div>
-  )
-}
-
-function Tooltip({ spot }: { spot: Hotspot }) {
-  return (
-    <span
-      className="overlay__tip"
-      style={{ left: spot.bounds.left + spot.bounds.width / 2, top: spot.bounds.top - 10 }}
-    >
-      {spot.label}
-    </span>
   )
 }

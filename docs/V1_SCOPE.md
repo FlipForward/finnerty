@@ -18,7 +18,7 @@ the desk zooms into a working pixel-art OS.
 - MRFINNERTYTV OS: boot sequence, desktop, and LIVE / CLIPS / PLAY / ABOUT /
   POWER. Escape closes an app, Escape again returns to the room.
 - LIVE: Twitch's official player and chat embeds.
-- PLAY: *Signal Catch*, a small self-contained dodge/collect game.
+- PLAY: a deliberate IN PROGRESS screen. The mini-game is not built yet.
 - Ambient layers with randomised idle gaps, disabled under
   `prefers-reduced-motion`.
 - Mobile fallback: a still of the room and three direct links.

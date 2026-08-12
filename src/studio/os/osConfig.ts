@@ -40,6 +40,16 @@ export const DEFAULT_APP: AppId = 'live'
  */
 export const TWITCH_CHANNEL = import.meta.env.VITE_TWITCH_CHANNEL?.trim() ?? ''
 
+/**
+ * The same handle across every platform.
+ *
+ * Deliberately separate from TWITCH_CHANNEL: the embed stays strictly
+ * env-driven so a missing deploy variable shows up as a visible "no channel
+ * routed" state rather than being masked by a hardcoded fallback. The social
+ * links are just links, so they can use the known handle unconditionally.
+ */
+export const HANDLE = 'mrfinnertytv'
+
 export interface ClipDef {
   id: string
   title: string
@@ -92,17 +102,28 @@ export interface SocialDef {
   href: string | null
 }
 
-/** TODO(links): fill in the nulls as the accounts are confirmed. */
 export const SOCIALS: SocialDef[] = [
   {
     id: 'twitch',
     label: 'TWITCH',
-    handle: TWITCH_CHANNEL ? `/${TWITCH_CHANNEL}` : '—',
-    href: TWITCH_CHANNEL ? `https://www.twitch.tv/${encodeURIComponent(TWITCH_CHANNEL)}` : null,
+    handle: `@${HANDLE}`,
+    href: `https://www.twitch.tv/${HANDLE}`,
+  },
+  {
+    id: 'instagram',
+    label: 'INSTAGRAM',
+    handle: `@${HANDLE}`,
+    href: `https://www.instagram.com/${HANDLE}`,
+  },
+  {
+    id: 'youtube',
+    label: 'YOUTUBE',
+    handle: `@${HANDLE}`,
+    href: `https://www.youtube.com/@${HANDLE}`,
   },
   { id: 'atlaz', label: 'ATLAZ', handle: 'atlazmusic.be', href: 'https://atlazmusic.be' },
-  { id: 'instagram', label: 'INSTAGRAM', handle: 'not linked yet', href: null },
-  { id: 'youtube', label: 'YOUTUBE', handle: 'not linked yet', href: null },
+  // TODO(links): no contact address confirmed yet, so this stays a plain row
+  // rather than a mailto: guessed from the handle.
   { id: 'contact', label: 'CONTACT', handle: 'not linked yet', href: null },
 ]
 

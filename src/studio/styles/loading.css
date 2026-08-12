@@ -1,0 +1,101 @@
+/* Loading screen — black, small spinning gold coin, one line underneath.
+   Sits above the room, which mounts and paints beneath it. */
+
+.loading {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: #000;
+  opacity: 1;
+  transition: opacity var(--reveal-fade) ease-out;
+}
+
+.loading.is-done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading__line {
+  margin: 0;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  color: #8a7f6d;
+  /* Hard cut between lines rather than a cross-fade — keeps it pixel, not soft. */
+  animation: line-in 220ms steps(2, end);
+}
+
+@keyframes line-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.loading__bar {
+  width: 132px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+
+.loading__bar span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #e8b44a;
+  transform-origin: 0 50%;
+  transition: transform 260ms ease-out;
+}
+
+/* Progress is announced here; the visual bar is decorative. */
+.loading__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------- coin */
+
+.coin {
+  position: relative;
+  perspective-origin: 50% 50%;
+}
+
+.coin__body {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.coin__layer {
+  position: absolute;
+  inset: 0;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  backface-visibility: visible;
+}
+
+.coin__flash {
+  /* Specular pop as a face swings through the light. */
+  filter: brightness(0) invert(1) sepia(0.5) saturate(2.5)
+    drop-shadow(0 0 12px rgba(255, 214, 130, 0.9));
+  backface-visibility: hidden;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading__line { animation: none; }
+  .loading__bar span { transition: none; }
+}

@@ -71,7 +71,7 @@ src/studio/
   lib/sprites.ts         procedural character + cat placeholders
   hooks/useStageScale.ts viewport fitting
   components/            Studio, Character, Ambient, PcCloseup, Panels, MobileStudio
-  os/                    Os shell + Signal Catch mini-game
+  os/                    Os shell, apps and osConfig (apps, clips, socials)
   styles/                studio.css, os.css
 ```
 
