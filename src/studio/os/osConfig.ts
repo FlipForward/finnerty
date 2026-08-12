@@ -8,6 +8,12 @@
  * break or overflow at another resolution.
  */
 
+/**
+ * Desktop wallpaper. Falls back to the procedural valley in `wallpaper.ts` if
+ * this file is missing, so the desktop is never bare.
+ */
+export const WALLPAPER_SRC = '/assets/pc/pc-wallpaper.png'
+
 export const SCREEN_WIDTH = 1190
 export const SCREEN_HEIGHT = 622
 export const PANEL_HEIGHT = 30

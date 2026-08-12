@@ -7,6 +7,8 @@ export interface PreloadState {
   done: boolean
   loaded: number
   total: number
+  /** True once `waitFor` has settled — nothing else has been requested before it. */
+  firstReady: boolean
   /** Sources that failed. The site still opens; it never hangs on them. */
   failed: string[]
 }
@@ -37,12 +39,13 @@ function after(ms: number): Promise<void> {
  * paint — exactly the hitch the loading screen exists to hide. So this waits
  * for both, with the guards above so it always terminates.
  */
-export function usePreload(sources: string[]): PreloadState {
+export function usePreload(sources: string[], waitFor?: string): PreloadState {
   const [state, setState] = useState<PreloadState>(() => ({
     progress: sources.length === 0 ? 1 : 0,
     done: sources.length === 0,
     loaded: 0,
     total: sources.length,
+    firstReady: false,
     failed: [],
   }))
 
@@ -53,9 +56,10 @@ export function usePreload(sources: string[]): PreloadState {
     const total = sources.length
 
     if (total === 0) {
-      setState({ progress: 1, done: true, loaded: 0, total: 0, failed: [] })
+      setState({ progress: 1, done: true, loaded: 0, total: 0, firstReady: true, failed: [] })
       return
     }
+    let firstReady = false
 
     const settle = () => {
       settled += 1
@@ -65,6 +69,7 @@ export function usePreload(sources: string[]): PreloadState {
         done: settled >= total,
         loaded: settled,
         total,
+        firstReady,
         failed: [...failed],
       })
     }
@@ -93,14 +98,23 @@ export function usePreload(sources: string[]): PreloadState {
       }
     }
 
-    for (const src of sources) void load(src).then(settle, settle)
+    // `waitFor` gets the connection to itself. The coin is the loading screen,
+    // so it must not queue behind megabytes of room art.
+    const startRest = () => {
+      if (cancelled) return
+      firstReady = true
+      setState((s) => ({ ...s, firstReady: true }))
+      for (const src of sources) void load(src).then(settle, settle)
+    }
+    if (waitFor) void load(waitFor).then(startRest, startRest)
+    else startRest()
 
     return () => {
       cancelled = true
     }
     // Sources come from a module-level constant; identity is stable.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sources.length])
+  }, [sources.length, waitFor])
 
   return state
 }

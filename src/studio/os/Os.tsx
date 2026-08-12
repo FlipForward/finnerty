@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { Icon } from './Icon'
 import { Window } from './Window'
 import { BrowserApp, StreamApp } from './apps/Browser'
@@ -20,6 +20,7 @@ import {
   DOCK_APPS,
   DOCS,
   SHORTCUTS,
+  WALLPAPER_SRC,
   type AppId,
 } from './osConfig'
 import { wallpaperUrl } from './wallpaper'
@@ -46,7 +47,18 @@ export function Os({ onPowerOff }: Props) {
   const [menu, setMenu] = useState(false)
   const [filesPath, setFilesPath] = useState('/home/finn')
   const [prefs, setPrefs] = useState<Prefs>({ reducedMotion: false, sound: true })
-  const wallpaper = useMemo(() => wallpaperUrl(), [])
+  // Prefer the shipped wallpaper; fall back to the procedural valley only if
+  // the file is missing, so a bad path can never leave the desktop bare.
+  const [wallpaper, setWallpaper] = useState(WALLPAPER_SRC)
+  useEffect(() => {
+    let cancelled = false
+    const img = new Image()
+    img.onerror = () => !cancelled && setWallpaper(wallpaperUrl())
+    img.src = WALLPAPER_SRC
+    return () => {
+      cancelled = true
+    }
+  }, [])
   const deskRef = useRef<HTMLDivElement>(null)
 
   const boot = useCallback(() => {

@@ -13,8 +13,16 @@ export const COIN_SIZE = 96
  * layers add ~1.6MB more. Without waiting for all of it the room paints in
  * pieces and the hover art arrives late, so the whole set is gated here.
  */
+/**
+ * Loaded before anything else, alone.
+ *
+ * The coin IS the loading screen, so it must not queue behind 5MB of room art
+ * competing for the same connections — otherwise the screen is blank for the
+ * first moment. Everything in PRELOAD_SOURCES starts only once this has landed.
+ */
+export const PRELOAD_FIRST = COIN_LOGO
+
 export const PRELOAD_SOURCES: string[] = [
-  COIN_LOGO,
   ASSETS.room,
   ASSETS.pcCloseup,
   ...HOTSPOTS.flatMap((h) => [h.layers.normal, h.layers.highlight]),

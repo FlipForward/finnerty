@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark" />
     <title>MRFINNERTYTV — World</title>
+    <!-- The coin IS the loading screen, so it is requested before any script
+         runs and therefore before the room art it would otherwise queue behind. -->
+    <link rel="preload" as="image" href="/assets/studio/sun-coin.png" />
     <meta
       name="description"
       content="A small pixel-art world you can walk around. Built for MrFinnertyTV."

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { PRELOAD_SOURCES, REVEAL_HOLD_MS } from './studio/config/loading'
+import { PRELOAD_FIRST, PRELOAD_SOURCES, REVEAL_HOLD_MS } from './studio/config/loading'
 import { usePreload } from './studio/hooks/usePreload'
 import { LoadingScreen } from './studio/components/LoadingScreen'
 import { MobileStudio } from './studio/components/MobileStudio'
 import { PcCloseup } from './studio/components/PcCloseup'
-import { AtlazPanel, PhotographyPanel } from './studio/components/Panels'
+import { AtlazPanel } from './studio/components/Panels'
+import { Camera } from './studio/camera/Camera'
 import { Studio } from './studio/components/Studio'
 import type { HotspotId } from './studio/config/scene'
 
@@ -27,7 +28,7 @@ export function App() {
   // Nothing is interactive until every asset has decoded. `revealed` trails
   // `preload.done` by the hold + fade so the screen reads as finishing rather
   // than blinking out, and the room is not clickable through it.
-  const preload = usePreload(PRELOAD_SOURCES)
+  const preload = usePreload(PRELOAD_SOURCES, PRELOAD_FIRST)
   const [revealed, setRevealed] = useState(false)
 
   useEffect(() => {
@@ -72,12 +73,16 @@ export function App() {
 
   return (
     <>
-      {/* The room mounts underneath immediately so it is fully painted by the
-          time the loading screen lifts. */}
-      <Studio onOpen={open} interactive={!showLoading && view.kind === 'studio'} />
+      {/* The room mounts underneath so it is fully painted by the time the
+          loading screen lifts — but only once the coin has landed. Its <img>
+          tags start fetching the moment they render, and 5MB of room art
+          racing the 42kB coin is exactly what would leave the loader blank. */}
+      {preload.firstReady && (
+        <Studio onOpen={open} interactive={!showLoading && view.kind === 'studio'} />
+      )}
       {view.kind === 'pc' && <PcCloseup onExit={close} />}
       {view.kind === 'panel' && view.id === 'atlaz' && <AtlazPanel onClose={close} />}
-      {view.kind === 'panel' && view.id === 'photography' && <PhotographyPanel onClose={close} />}
+      {view.kind === 'panel' && view.id === 'photography' && <Camera onExit={close} />}
       {showLoading && (
         <LoadingScreen progress={pinLoading ? 0.42 : preload.progress} complete={!pinLoading && preload.done} />
       )}
